@@ -15,6 +15,7 @@ from functools import lru_cache
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from grpc_health.v1 import health
 from observe_core import SessionMiddleware
 from observe_core.logger_api import get_logger
 
@@ -38,7 +39,7 @@ def load_config() -> dict:
         graphs = config_data.get("graphs", {})
         os.environ["LANGSERVE_GRAPHS"] = json.dumps(graphs)
 
-        logger.info(f"Configuración de grafos cargada globalmente: {graphs}")
+        logger.info(f"Graph file loaded: {graphs}")
     except FileNotFoundError as e:
         logger.error(f"No se pudo cargar el archivo langgraph.json en la raíz: {e}")
     return graphs
@@ -56,15 +57,13 @@ def define_app(add_auth: bool = False) -> FastAPI:
 
     """
     load_config()
-    # langgraph_config = Config(graphs=load_config())
-    app = FastAPI(title="Observer agent", summary="Observer agent", version="0.1.0", lifespan=lifespan)
 
-    app.add_middleware(SessionMiddleware)
+    langgraph_app.add_middleware(SessionMiddleware)
 
     # if add_auth:
-    #     app.add_middleware(AuthMiddleware)
+    #     langgraph_app.add_middleware(AuthMiddleware)
 
-    app.add_middleware(
+    langgraph_app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=True,
@@ -72,10 +71,7 @@ def define_app(add_auth: bool = False) -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.mount("/", langgraph_app)
-    # app.include_router(router=router_agent)
-
     # Instrumentator().instrument(app).expose(app)
 
     logger.info("Define fastapi server.")
-    return app
+    return langgraph_app

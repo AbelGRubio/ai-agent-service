@@ -3,7 +3,7 @@
 from functools import lru_cache
 
 from observe_core.custom_settings import CustomSettings
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import SettingsConfigDict
 
 from observe_agent.mcp_types import MCPConfig
@@ -27,6 +27,7 @@ class AgentSettings(CustomSettings):
     mcp_url: str = Field(default="http://localhost:8000/mcp", alias="MCP_LOCAL_URL")
 
     model_name: str = Field(default="gpt-5.5", alias="MODEL_NAME")
+    openai_api_key: SecretStr = Field(default=None, alias="OPENAI_API_KEY")
 
     model_config = SettingsConfigDict(
         env_prefix="",
@@ -35,10 +36,10 @@ class AgentSettings(CustomSettings):
     )
 
 
-def default__mcp_config(settings: AgentSettings) -> MCPConfig:
+def default__mcp_config(settings: AgentSettings) -> dict:
     """Build default MCP configuration using parsed settings values."""
     return {
-        "-mcp": {
+        "observe-mcp": {
             "url": settings.mcp_url,
             "headers": {},
             "transport": "http",
