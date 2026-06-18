@@ -1,11 +1,7 @@
 
-import asyncio
-
 from copilotkit import CopilotKitState
 from pydantic import BaseModel, Field
 
-from observe_agent.jwt_utils import get_jwt_token
-from observe_agent.mcp_manager import MCPManager
 from observe_agent.mcp_types import MCPConfig
 from observe_core.logger_api import get_logger
 
@@ -35,6 +31,3 @@ class AgentState(CopilotKitState):
     mcp_config: MCPConfig | None
     openai_api_key: str | None
     rag_context: str | None
-    # Guardamos las herramientas aquí para no recrearlas
-    mcp_tools: list = Field(default_factory=list)
-    manager: MCPManager | None

@@ -6,8 +6,6 @@ from observe_core.custom_settings import CustomSettings
 from pydantic import Field, SecretStr
 from pydantic_settings import SettingsConfigDict
 
-from observe_agent.mcp_types import MCPConfig
-
 __version__ = "0.1.0"
 
 
