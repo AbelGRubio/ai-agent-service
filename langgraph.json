@@ -1,0 +1,11 @@
+{
+  "python_version": "3.13",
+  "dockerfile_lines": [],
+  "dependencies": [
+    "."
+  ],
+  "graphs": {
+    "observe_agent": "./src/observe_agent/agent.py:graph"
+  },
+  "env": ".env"
+}
