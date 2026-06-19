@@ -2,7 +2,7 @@ import asyncio
 import hashlib
 import json
 from functools import lru_cache
-from typing import Any, Dict, List
+from typing import Any
 
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
@@ -11,12 +11,12 @@ from mcp import ClientSession
 
 class MCPManager:
     def __init__(self):
-        self.sessions: Dict[str, ClientSession] = {}
-        self.tools_cache: Dict[str, List[Any]] = {}  # Cache de herramientas
+        self.sessions: dict[str, ClientSession] = {}
+        self.tools_cache: dict[str, list[Any]] = {}  # Cache de herramientas
         self.current_config_hash = None
         self.lock = asyncio.Lock()
 
-    def _get_hash(self, mcp_config: Dict[str, Any]) -> str:
+    def _get_hash(self, mcp_config: dict[str, Any]) -> str:
         # Generamos un hash único basado en la configuración actual
         config_str = json.dumps(mcp_config, sort_keys=True)
         return hashlib.md5(config_str.encode()).hexdigest()
@@ -35,7 +35,7 @@ class MCPManager:
         #     await session.__aexit__(None, None, None)
         self.sessions.clear()
 
-    async def get_active_tools(self, mcp_config: Dict[str, Any], mcp_client: MultiServerMCPClient):
+    async def get_active_tools(self, mcp_config: dict[str, Any], mcp_client: MultiServerMCPClient):
         async with self.lock:
             new_hash = self._get_hash(mcp_config)
 

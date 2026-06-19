@@ -1,12 +1,11 @@
-
 from copilotkit import CopilotKitState
+from observe_core.logger import get_logger
 from pydantic import BaseModel, Field
 
 from observe_agent.mcp_types import MCPConfig
-from observe_core.logger_api import get_logger
-
 
 logger = get_logger(__name__)
+
 
 class ConnectionConfig(BaseModel):
     """Normalized MCP connection payload."""

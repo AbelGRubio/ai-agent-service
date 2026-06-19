@@ -1,6 +1,6 @@
 import httpx
+from observe_core.logger import get_logger
 
-from observe_core.logger_api import get_logger
 from observe_agent.settings import get_settings
 
 logger = get_logger(__name__)
@@ -25,4 +25,3 @@ async def get_jwt_token() -> str:
     if not token:
         raise ValueError("JWT response does not include access_token")
     return token
-

@@ -60,6 +60,7 @@ dependencies = [
     { name = "observe-core" },
     { name = "openai" },
     { name = "pydantic-settings" },
+    { name = "pyjwt" },
 ]
 
 [package.dev-dependencies]
@@ -87,11 +88,12 @@ requires-dist = [
     { name = "langchain-mcp-adapters" },
     { name = "langchain-openai" },
     { name = "langgraph" },
-    { name = "langgraph-cli", extras = ["backend", "inmem"] },
+    { name = "langgraph-cli", extras = ["inmem"] },
     { name = "langgraph-sdk", specifier = ">=0.4.2" },
     { name = "observe-core", directory = "../../libs/observe_core" },
     { name = "openai" },
     { name = "pydantic-settings" },
+    { name = "pyjwt", specifier = ">=2.13.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1474,7 +1476,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/eb/ee/97ee0b973d072702e
 
 [[package]]
 name = "observe-core"
-version = "0.1.0"
+version = "0.1.1"
 source = { directory = "../../libs/observe_core" }
 dependencies = [
     { name = "aws-opentelemetry-distro" },

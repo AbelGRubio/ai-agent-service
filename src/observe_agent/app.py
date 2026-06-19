@@ -15,13 +15,11 @@ from functools import lru_cache
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from grpc_health.v1 import health
 from observe_core import SessionMiddleware
-from observe_core.logger_api import get_logger
+from observe_core.logger import get_logger
 
 sys.path.insert(0, os.path.abspath("src"))
 from langgraph_api.server import app as langgraph_app
-from langgraph_runtime.lifespan import lifespan
 
 logger = get_logger(__name__)
 

@@ -1,13 +1,15 @@
 import asyncio
 import copy
 
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from langchain_mcp_adapters.resources import load_mcp_resources
-from observe_core.logger_api import get_logger
+from observe_core.logger import get_logger
 
 from observe_agent.jwt_utils import get_jwt_token
 from observe_agent.mcp_types import MCPConfig
 from observe_agent.settings import default__mcp_config, get_settings
+
 from .state import AgentState, ConnectionConfig
 
 logger = get_logger(__name__)
@@ -19,7 +21,7 @@ async def create_mcp_bridge_tools(session):
     mcp_resource_tools = []
     for resource in resources_tools:
         uri_str = str(resource.metadata.get("uri"))
-        resource_name = uri_str.rstrip('/').split('/')[-1]
+        resource_name = uri_str.rstrip("/").split("/")[-1]
 
         @tool(name_or_callable=f"read_{resource_name}")
         async def resource_tool(uri: str = uri_str) -> str:
@@ -41,14 +43,14 @@ async def create_mcp_bridge_tools(session):
     return mcp_resource_tools
 
 
-async def setup_mcp_node(state: AgentState) -> dict:
+async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict:
     logger.info("Configurando MCP y herramientas...")
     settings = get_settings()
     default_mcp_config = default__mcp_config(settings)
 
     mcp_config: MCPConfig = copy.deepcopy(state.get("mcp_config") or default_mcp_config)
 
-    token: str = ''
+    token: str = ""
     if settings.jwt_protected:
         logger.info("Retrieving token...")
         token: str = await asyncio.to_thread(get_jwt_token)

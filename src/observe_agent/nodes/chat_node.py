@@ -1,4 +1,5 @@
 """Main entry point for the CopilotKit agent graph."""
+
 import copy
 from contextlib import AsyncExitStack
 
@@ -10,15 +11,16 @@ from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END
 from langgraph.types import Command
-from observe_core.logger_api import get_logger
+from observe_core.logger import get_logger
 
+from observe_agent.mcp_manager import get_mcp_manager
 from observe_agent.mcp_types import MCPConfig
 from observe_agent.nodes.state import AgentState
 from observe_agent.settings import default__mcp_config, get_settings
-from observe_agent.mcp_manager import get_mcp_manager
 
 logger = get_logger(__name__)
 manager = get_mcp_manager()
+
 
 async def agent_node(state: AgentState, config: RunnableConfig):
     logger.info("Ejecutando el agente...")
@@ -30,7 +32,6 @@ async def agent_node(state: AgentState, config: RunnableConfig):
     mcp_tools = []
 
     async with AsyncExitStack() as stack:
-
         for name in mcp_config:
             logger.info(f"Connecting to session for MCP server: '{name}'")
             session = await stack.enter_async_context(mcp_client.session(name))

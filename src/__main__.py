@@ -4,8 +4,7 @@ import logging
 
 import uvicorn
 from observe_agent.app import define_app
-from observe_core.logger_api import get_logger
-
+from observe_core.logger import get_logger
 
 logger = get_logger(__name__)
 
