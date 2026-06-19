@@ -11,8 +11,6 @@ Copyright ©2026. All rights reserved.
 ========================================================================================================================
 """
 
-from typing import Optional
-
 from copilotkit import CopilotKitState
 from observe_core.logger import get_logger
 from pydantic import BaseModel, Field
@@ -47,6 +45,6 @@ class AgentState(CopilotKitState):
     used by the nodes in this package.
     """
 
-    mcp_config: Optional[MCPConfig]
-    openai_api_key: Optional[str]
-    rag_context: Optional[str]
+    mcp_config: MCPConfig | None
+    openai_api_key: str | None
+    rag_context: str | None

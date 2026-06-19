@@ -54,7 +54,6 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> Command:
         Exception: Any error raised during agent invocation is logged and
         re-raised to surface failures to the caller.
     """
-
     logger.info("Ejecutando el agente...")
     # Load application settings and compute the default MCP configuration
     settings = get_settings()
@@ -79,7 +78,7 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> Command:
         model = ChatOpenAI(model=settings.model_name, api_key=settings.openai_api_key.get_secret_value())
         # Inject RAG (retrieval) context into the system prompt if present.
         # NOTE: integration into the actual message list may be required upstream.
-        system_prompt = f"Contexto disponible: {state.get('rag_context')}"
+        # system_prompt = f"Contexto disponible: {state.get('rag_context')}"
 
         if not mcp_tools:
             logger.warning("No se encontraron herramientas MCP cargadas en el estado.")

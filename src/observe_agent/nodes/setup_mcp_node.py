@@ -12,9 +12,10 @@ Copyright ©2026. All rights reserved.
 ========================================================================================================================
 """
 
-from typing import Any, Callable, List
 import asyncio
 import copy
+from collections.abc import Callable
+from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
@@ -30,7 +31,7 @@ from .state import AgentState, ConnectionConfig
 logger = get_logger(__name__)
 
 
-async def create_mcp_bridge_tools(session: Any) -> List[Callable[..., Any]]:
+async def create_mcp_bridge_tools(session: Any) -> list[Callable[..., Any]]:
     """Create tool wrappers for MCP resources exposed by a session.
 
     Args:
@@ -41,10 +42,9 @@ async def create_mcp_bridge_tools(session: Any) -> List[Callable[..., Any]]:
         A list of callables decorated as tools that can be injected into the
         agent's toolset.
     """
-
     resources_tools = await load_mcp_resources(session)
 
-    mcp_resource_tools: List[Callable[..., Any]] = []
+    mcp_resource_tools: list[Callable[..., Any]] = []
     for resource in resources_tools:
         uri_str = str(resource.metadata.get("uri"))
         resource_name = uri_str.rstrip("/").split("/")[-1]
@@ -77,7 +77,6 @@ async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict[str,
         Mapping to merge into graph state, typically `mcp_config` and
         `openai_api_key`.
     """
-
     logger.info("Configurando MCP y herramientas...")
     settings = get_settings()
     default_mcp_config = default__mcp_config(settings)

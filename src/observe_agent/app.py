@@ -25,9 +25,10 @@ logger = get_logger(__name__)
 
 
 def load_config() -> dict:
-    """Create and configure the FastAPI application instance.
+    """Load the LangGraph configuration file and register graph definitions.
 
     Returns:
+        dict: Parsed graph definitions loaded from `langgraph.json`.
     """
     graphs = {}
     try:

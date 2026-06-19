@@ -11,8 +11,6 @@ Copyright ©2026. All rights reserved.
 ========================================================================================================================
 """
 
-from typing import Any, Dict
-
 from observe_core.logger import get_logger
 
 from observe_agent.nodes.state import AgentState
@@ -21,7 +19,7 @@ from observe_agent.rag.retriever import Retriever
 logger = get_logger(__name__)
 
 
-async def rag_node(state: AgentState, retriever: Retriever) -> dict[str, object]:
+def rag_node(state: AgentState, retriever: Retriever) -> dict[str, object]:
     """Retrieve relevant documents and return updated RAG context.
 
     This node performs retrieval using the provided `Retriever` instance and
@@ -40,7 +38,6 @@ async def rag_node(state: AgentState, retriever: Retriever) -> dict[str, object]
     Raises:
         ValueError: If the retrieval operation fails for any reason.
     """
-
     logger.info("Ejecutando lógica de RAG...")
     # Example retrieval flow; real implementations will reformulate user
     # queries, call the retriever, and normalize documents into the state.

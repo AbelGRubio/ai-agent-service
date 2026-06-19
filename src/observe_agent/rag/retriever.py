@@ -19,7 +19,7 @@ settings = get_settings()
 
 
 class Retriever(BaseRetriever):
-    """Retriever class for indexing and querying documents using InMemoryVectorStore, with optional hybrid BM25 retrieval."""
+    """Retriever class for indexing and querying documents using InMemoryVectorStore."""
 
     _embeddings: Embeddings = PrivateAttr()
     _hybrid: bool = PrivateAttr()
@@ -136,7 +136,16 @@ class Retriever(BaseRetriever):
         return self.retrieve(query, k=self.default_k)
 
     @staticmethod
-    def _define_embeddings():
+    def _define_embeddings() -> OpenAIEmbeddings:
+        """Create and return the OpenAI embeddings client.
+
+        This helper centralizes embedding client construction so that the
+        Retriever can instantiate embeddings consistently. The returned client
+        is configured with the application OpenAI API key and a fixed model.
+
+        Returns:
+            OpenAIEmbeddings: Configured embeddings instance.
+        """
         return OpenAIEmbeddings(
             api_key=settings.openai_api_key,
             model="text-embedding-3-small",

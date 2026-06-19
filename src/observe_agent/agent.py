@@ -3,7 +3,6 @@
 from langgraph.graph import StateGraph
 from observe_core.logger import get_logger
 
-from observe_agent.nodes import setup_mcp_node
 from observe_agent.nodes.chat_node import agent_node
 from observe_agent.nodes.rag_node import rag_node
 from observe_agent.nodes.setup_mcp_node import setup_mcp_node
