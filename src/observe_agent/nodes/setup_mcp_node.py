@@ -1,3 +1,18 @@
+"""Setup MCP node and bridge tools.
+
+========================================================================================================================
+Name:         apps/agent/src/observe_agent/nodes/setup_mcp_node.py
+Description:  Build MCP resource-based tools and normalize MCP connection
+              configuration for the agent runtime.
+Project:      Observe me
+Date:         2026-06-19 00:00:00
+Status:       Development
+
+Copyright ©2026. All rights reserved.
+========================================================================================================================
+"""
+
+from typing import Any, Callable, List
 import asyncio
 import copy
 
@@ -15,35 +30,54 @@ from .state import AgentState, ConnectionConfig
 logger = get_logger(__name__)
 
 
-async def create_mcp_bridge_tools(session):
+async def create_mcp_bridge_tools(session: Any) -> List[Callable[..., Any]]:
+    """Create tool wrappers for MCP resources exposed by a session.
+
+    Args:
+        session: MCP session object exposing resource access methods such as
+            `read_resource` or `get_prompt`.
+
+    Returns:
+        A list of callables decorated as tools that can be injected into the
+        agent's toolset.
+    """
+
     resources_tools = await load_mcp_resources(session)
 
-    mcp_resource_tools = []
+    mcp_resource_tools: List[Callable[..., Any]] = []
     for resource in resources_tools:
         uri_str = str(resource.metadata.get("uri"))
         resource_name = uri_str.rstrip("/").split("/")[-1]
 
         @tool(name_or_callable=f"read_{resource_name}")
         async def resource_tool(uri: str = uri_str) -> str:
-            """Lee el contenido de un recurso MCP específico."""
+            """Read the content of a specific MCP resource.
+
+            The implementation uses the provided `session` to read the
+            resource. The returned value is coerced to `str` to ensure the
+            tool returns a JSON-serializable scalar.
+            """
             content = await session.read_resource(uri)
-            # El contenido suele venir en una lista de objetos,
-            # nos aseguramos de devolver el texto plano
             return str(content)
 
         mcp_resource_tools.append(resource_tool)
 
-    # @tool
-    # async def get_mcp_prompt(prompt_name: str, arguments: dict = None) ->
-    # str:
-    #     """Obtiene y renderiza un prompt desde el servidor MCP."""
-    #     result = await session.get_prompt(prompt_name, arguments=arguments)
-    #     return str(result)
-
     return mcp_resource_tools
 
 
-async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict:
+async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict[str, object]:
+    """Normalize MCP config and optionally attach authentication tokens.
+
+    Args:
+        state: `AgentState` containing any pre-supplied `mcp_config` or
+            `openai_api_key` values.
+        config: RunnableConfig provided by the runtime (unused directly).
+
+    Returns:
+        Mapping to merge into graph state, typically `mcp_config` and
+        `openai_api_key`.
+    """
+
     logger.info("Configurando MCP y herramientas...")
     settings = get_settings()
     default_mcp_config = default__mcp_config(settings)
@@ -53,7 +87,7 @@ async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict:
     token: str = ""
     if settings.jwt_protected:
         logger.info("Retrieving token...")
-        token: str = await asyncio.to_thread(get_jwt_token)
+        token = await asyncio.to_thread(get_jwt_token)
 
     for name, raw_conn in mcp_config.items():
         logger.info(f"Parsing information server: '{name}'")
