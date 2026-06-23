@@ -11,12 +11,14 @@ Copyright ©2026. All rights reserved.
 ========================================================================================================================
 """
 import asyncio
+
+from langchain_core.messages import HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
 from observe_core.logger import get_logger
 
 from observe_agent.nodes.state import AgentState
 from observe_agent.rag.retriever import Retriever
-from langchain_core.messages import HumanMessage
-from langchain_core.prompts import ChatPromptTemplate
+
 logger = get_logger(__name__)
 
 
@@ -64,7 +66,7 @@ async def rag_node(state: AgentState, retriever: Retriever, llm) -> dict[str, ob
         ),
         ("human", "{question}"),
     ])
-    #async with AsyncExitStack() as stack:
+    
     chain = prompt | llm
     reformulated_query = await chain.ainvoke({"question": user_query})
     # 3. Llamada al LLM para reformular

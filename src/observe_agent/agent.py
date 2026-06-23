@@ -1,6 +1,7 @@
 """Main entry point for the CopilotKit agent graph."""
 from functools import partial
 
+from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph
 from observe_core.logger import get_logger
 
@@ -9,7 +10,6 @@ from observe_agent.nodes.rag_node import rag_node
 from observe_agent.nodes.setup_mcp_node import setup_mcp_node
 from observe_agent.nodes.state import AgentState
 from observe_agent.rag.retriever import Retriever
-from langchain_openai import ChatOpenAI
 from observe_agent.settings import get_settings
 
 logger = get_logger(__name__)

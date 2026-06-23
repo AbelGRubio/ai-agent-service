@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
+from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_openai import OpenAIEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from observe_core.logger import get_logger
 from pydantic import PrivateAttr
 
@@ -74,11 +77,39 @@ class Retriever(BaseRetriever):
 
         # Initialize empty InMemoryVectorStore index without texts
         self._vectorstore = InMemoryVectorStore.from_documents([], self._embeddings)
+        self.load_documents_from_folder()
 
         if hybrid:
             self._documents = []
 
         logger.info(f"Retriever initialized with vector_db: faiss, hybrid: {hybrid}")
+
+    def load_documents_from_folder(self) -> None:
+        """Loads, splits, and adds all .md files in the specified folder to the vectorstore."""
+        base_dir = Path(__file__).parent
+        folder_path = base_dir / "docs"
+
+        path = Path(folder_path)
+        if not path.exists():
+            logger.error(f"Folder {folder_path} does not exist.")
+            return
+
+        splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+
+        # Load all markdown files
+        all_docs = []
+        for file in path.glob("*.md"):
+            loader = TextLoader(str(file), encoding="utf-8")
+            all_docs.extend(loader.load())
+
+        # Split and add
+        split_docs = splitter.split_documents(all_docs)
+        self._vectorstore.add_documents(split_docs)
+
+        if self._hybrid:
+            self._documents.extend(split_docs)
+
+        logger.info(f"Successfully loaded {len(split_docs)} chunks from {folder_path}")
 
     def add_texts(self, texts: list[str], metadata: list[dict] | None = None) -> None:
         """Add a list of texts to the InMemoryVectorStore vector store and, if hybrid, to the documents list.

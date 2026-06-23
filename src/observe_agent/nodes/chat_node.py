@@ -16,6 +16,7 @@ from contextlib import AsyncExitStack
 
 from copilotkit.langgraph import copilotkit_exit
 from langchain.agents import create_agent
+from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
@@ -87,8 +88,26 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> Command:
         react_agent = create_agent(model, mcp_tools)
 
         try:
+            rag_context = state.get("rag_context", [])
+
+            # 2. Prepare the augmented messages list
+            # We create a new list so we don't mutate the original state["messages"] permanently
+            messages = list(state["messages"])
+
+            if rag_context:
+                # Join documents into a clean string
+                context_text = "\n\n".join(rag_context)
+
+                # Create the context message
+                context_message = SystemMessage(
+                    content=f"Utiliza el siguiente contexto proporcionado para responder a la pregunta del usuario:\n\n{context_text}"
+                )
+
+                # Prepend it to the list (or insert it after the very first system prompt if you have one)
+                messages.insert(0, context_message)
+            
             # Invoke the agent asynchronously with the current conversation messages
-            agent_response = await react_agent.ainvoke({"messages": state["messages"]})
+            agent_response = await react_agent.ainvoke({"messages": messages})
             # Merge incoming messages from the agent with the existing conversation
             updated_messages = state["messages"] + agent_response.get("messages", [])
 
