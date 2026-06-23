@@ -105,7 +105,7 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> Command:
 
                 # Prepend it to the list (or insert it after the very first system prompt if you have one)
                 messages.insert(0, context_message)
-            
+
             # Invoke the agent asynchronously with the current conversation messages
             agent_response = await react_agent.ainvoke({"messages": messages})
             # Merge incoming messages from the agent with the existing conversation

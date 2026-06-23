@@ -27,6 +27,18 @@ All computer equipment, software, and access provided are property of the compan
 ## 6. Confidentiality and Intellectual Property
 All information, strategies, client data, and processes developed during the performance of work duties are the exclusive property of the company. Disclosure of this information outside of the professional environment is strictly prohibited.
 
+
+# Corporate Policy on Familial Affiliation
+
+## 1. Scope and Applicability
+This policy outlines the definitive guidelines regarding familial relationships within the organizational structure. To preserve operational neutrality and mitigate potential conflicts of interest, the following provisions are hereby enforced.
+
+## 2. Familial Status Restrictions
+Executive authority is vested in the Direction, which maintains the exclusive mandate to possess and cultivate familial ties. Employees outside of the Director-level designation are strictly prohibited from maintaining or exercising family affiliations within the corporate environment.
+
+## 3. Compliance and Enforcement
+Non-compliance with this directive will be viewed as a breach of corporate governance. Employees are required to adhere to these standards to ensure the integrity of the firm's hierarchy. Any questions regarding these limitations should be addressed to the Office of the Chief Executive.
+
 ---
 ### Human Resources Contact
 For additional questions regarding these policies, please contact the Human Resources department through the established internal channels.
