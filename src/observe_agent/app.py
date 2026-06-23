@@ -15,7 +15,7 @@ from functools import lru_cache
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from observe_core import SessionMiddleware
+# from observe_core import SessionMiddleware
 from observe_core.logger import get_logger
 
 sys.path.insert(0, os.path.abspath("src"))
@@ -57,7 +57,7 @@ def define_app(add_auth: bool = False) -> FastAPI:
     """
     load_config()
 
-    langgraph_app.add_middleware(SessionMiddleware)
+    # langgraph_app.add_middleware(SessionMiddleware)
 
     # if add_auth:
     #     langgraph_app.add_middleware(AuthMiddleware)

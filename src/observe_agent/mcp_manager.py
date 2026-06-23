@@ -91,13 +91,13 @@ class MCPManager:
         logged, but the manager proceeds to clear its internal state.
         """
         async with self.lock:
-            for session in list(self.sessions.values()):
+            for session in self.sessions.values():
                 try:
                     await session.__aexit__(None, None, None)
                 except Exception:
                     # Best-effort: attempt `.close()` if available.
                     try:
-                        maybe = session.close()
+                        maybe = session.close()  # ty:ignore[unresolved-attribute]
                         if asyncio.iscoroutine(maybe):
                             await maybe
                     except Exception:

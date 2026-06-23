@@ -84,9 +84,9 @@ async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict[str,
     mcp_config: MCPConfig = copy.deepcopy(state.get("mcp_config") or default_mcp_config)
 
     token: str = ""
-    if settings.jwt_protected:
-        logger.info("Retrieving token...")
-        token = await asyncio.to_thread(get_jwt_token)
+    # if settings.jwt_protected:
+    #     logger.info("Retrieving token...")
+    #     token = await asyncio.to_thread(get_jwt_token)
 
     for name, raw_conn in mcp_config.items():
         logger.info(f"Parsing information server: '{name}'")
