@@ -10,10 +10,12 @@ Status:       Development
 Copyright ©2026. All rights reserved.
 ========================================================================================================================
 """
+
 import asyncio
 
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 from observe_core.logger import get_logger
 
 from observe_agent.nodes.state import AgentState
@@ -22,7 +24,7 @@ from observe_agent.rag.retriever import Retriever
 logger = get_logger(__name__)
 
 
-async def rag_node(state: AgentState, retriever: Retriever, llm) -> dict[str, object]:
+async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> dict[str, object]:
     """Retrieve relevant documents and return updated RAG context.
 
     This node performs retrieval using the provided `Retriever` instance and
@@ -33,6 +35,7 @@ async def rag_node(state: AgentState, retriever: Retriever, llm) -> dict[str, ob
         state: Current `AgentState` (graph-local state object).
         retriever: Retriever instance capable of fetching documents for a
             given query.
+        llm: Chat OpenAI
 
     Returns:
         A dict containing keys to merge into the graph state. Example:
@@ -54,9 +57,11 @@ async def rag_node(state: AgentState, retriever: Retriever, llm) -> dict[str, ob
         (
             "system",
             "Eres un experto en decidir si una consulta requiere buscar en documentos internos de la empresa. "
-            "Tu objetivo es transformar la pregunta del usuario en una consulta de búsqueda eficiente para un sistema RAG. "
+            "Tu objetivo es transformar la pregunta del usuario en una consulta de búsqueda eficiente"
+            " para un sistema RAG. "
             "\n\nREGLAS:"
-            "1. Si la pregunta requiere conocer documentos internos, políticas, manuales o datos específicos de la empresa, devuelve la consulta de búsqueda optimizada."
+            "1. Si la pregunta requiere conocer documentos internos, políticas, manuales o datos específicos "
+            "de la empresa, devuelve la consulta de búsqueda optimizada."
             "2. Si la pregunta es casual, de saludo o general (ej. 'hola', 'qué tal'), responde 'NO_RAG'."
             "\n\nEJEMPLOS:"
             "Usuario: ¿Cuál es la política de empresa? -> Consulta: política interna de la empresa documento oficial"
@@ -64,13 +69,13 @@ async def rag_node(state: AgentState, retriever: Retriever, llm) -> dict[str, ob
             "Usuario: ¿Cómo pido vacaciones? -> Consulta: proceso solicitud vacaciones política empresa"
             "\n\nSi no estás seguro, asume que se necesita RAG para asegurar la veracidad.",
         ),
-        ("human", "{question}"),
+        ("user", "{question}"),
     ])
-    
+
     chain = prompt | llm
     reformulated_query = await chain.ainvoke({"question": user_query})
-    # 3. Llamada al LLM para reformular
 
+    # 3. Llamada al LLM para reformular
     # reformulated_query = await chain.ainvoke({"question": user_query})
     query_text = reformulated_query.content.strip()
     logger.info(reformulated_query)

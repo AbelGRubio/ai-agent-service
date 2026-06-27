@@ -1,4 +1,5 @@
 """Main entry point for the CopilotKit agent graph."""
+
 from functools import partial
 
 from langchain_openai import ChatOpenAI
@@ -18,7 +19,12 @@ settings = get_settings()
 workflow = StateGraph(state_schema=AgentState)
 
 mi_retriever = Retriever()
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=settings.openai_api_key.get_secret_value())
+llm = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0,
+    api_key=settings.llm_api_key.get_secret_value(),
+    base_url=settings.model_base_url,
+)
 
 nodo_rag_con_retriever = partial(rag_node, retriever=mi_retriever, llm=llm)
 

@@ -5,7 +5,7 @@
     "."
   ],
   "graphs": {
-    "observe_agent": "./src/observe_agent/agent.py:graph"
+    "observe_agent": "./src/observe_agent/graph.py:graph"
   },
   "env": ".env"
 }

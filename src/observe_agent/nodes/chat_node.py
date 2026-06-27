@@ -21,6 +21,8 @@ from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_openai import ChatOpenAI
+
+# from langchain_openai import ChatOpenAI
 from langgraph.graph import END
 from langgraph.types import Command
 from observe_core.logger import get_logger
@@ -76,7 +78,11 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> Command:
             mcp_tools.extend(server_tools)
 
         # Instantiate the LLM client with the configured model and API key
-        model = ChatOpenAI(model=settings.model_name, api_key=settings.openai_api_key.get_secret_value())
+        model = ChatOpenAI(
+            model="gpt-4o",
+            api_key=settings.llm_api_key.get_secret_value(),
+            base_url=settings.model_base_url,
+        )
         # Inject RAG (retrieval) context into the system prompt if present.
         # NOTE: integration into the actual message list may be required upstream.
         # system_prompt = f"Contexto disponible: {state.get('rag_context')}"
@@ -100,7 +106,8 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> Command:
 
                 # Create the context message
                 context_message = SystemMessage(
-                    content=f"Utiliza el siguiente contexto proporcionado para responder a la pregunta del usuario:\n\n{context_text}"
+                    content=f"Utiliza el siguiente contexto proporcionado para responder a la"
+                    f" pregunta del usuario:\n\n{context_text}"
                 )
 
                 # Prepend it to the list (or insert it after the very first system prompt if you have one)

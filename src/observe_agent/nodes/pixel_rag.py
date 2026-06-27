@@ -1,15 +1,15 @@
-# """RAG node: retrieves documents to enrich agent context.
-#
-# ========================================================================================================================
-# Name:         apps/agent/src/observe_agent/nodes/rag_node.py
-# Description:  Node responsible for retrieval-augmented generation (RAG).
-# Project:      Observe me
-# Date:         2026-06-19 00:00:00
-# Status:       Development
-#
-# Copyright ©2026. All rights reserved.
-# ========================================================================================================================
-# """
+"""RAG node: retrieves documents to enrich agent context.
+
+========================================================================================================================
+Name:         apps/agent/src/observe_agent/nodes/rag_node.py
+Description:  Node responsible for retrieval-augmented generation (RAG).
+Project:      Observe me
+Date:         2026-06-19 00:00:00
+Status:       Development
+
+Copyright ©2026. All rights reserved.
+========================================================================================================================
+"""
 #
 # from observe_core.logger import get_logger
 #

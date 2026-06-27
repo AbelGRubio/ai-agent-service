@@ -24,8 +24,10 @@ class AgentSettings(CustomSettings):
 
     mcp_url: str = Field(default="http://localhost:8000/mcp", alias="MCP_LOCAL_URL")
 
-    model_name: str = Field(default="gpt-5.5", alias="MODEL_NAME")
+    model_name: str = Field(default="gpt-4o", alias="MODEL_NAME")
     openai_api_key: SecretStr = Field(default=None, alias="OPENAI_API_KEY")
+    llm_api_key: SecretStr = Field(default=None, alias="LLM_API_KEY")
+    model_base_url: str | None = Field(default="http://localhost:5000", alias="MODEL_BASE_URL")
 
     model_config = SettingsConfigDict(
         env_prefix="",

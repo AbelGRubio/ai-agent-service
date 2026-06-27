@@ -24,9 +24,8 @@ from observe_core.logger import get_logger
 
 from observe_agent.jwt_utils import get_jwt_token
 from observe_agent.mcp_types import MCPConfig
+from observe_agent.nodes.state import AgentState, ConnectionConfig
 from observe_agent.settings import default__mcp_config, get_settings
-
-from .state import AgentState, ConnectionConfig
 
 logger = get_logger(__name__)
 
@@ -84,9 +83,9 @@ async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict[str,
     mcp_config: MCPConfig = copy.deepcopy(state.get("mcp_config") or default_mcp_config)
 
     token: str = ""
-    # if settings.jwt_protected:
-    #     logger.info("Retrieving token...")
-    #     token = await asyncio.to_thread(get_jwt_token)
+    if settings.jwt_protected:
+        logger.info("Retrieving token...")
+        token = await asyncio.to_thread(get_jwt_token)
 
     for name, raw_conn in mcp_config.items():
         logger.info(f"Parsing information server: '{name}'")

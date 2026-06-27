@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
   "observe-core",
+  "litellm==1.89.3",
   "langchain_community",
   "langchain[openai]",
   "openai",
@@ -117,7 +118,7 @@ ignore = ["ANN401"]
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["observe_me"]
+known-first-party = ["observe_agent"]
 section-order = [
     "future",
     "standard-library",
@@ -136,7 +137,7 @@ section-order = [
 
 [tool.ty.environment]
 python = "./.venv"
-python-version = "3.13"
+python-version = "3.14"
 python-platform = "linux"
 root = ["."]
 extra-paths = []
@@ -148,7 +149,7 @@ exclude = ["**/node_modules", "**/__pycache__", "**/*venv/**/*", "./build", "**/
 
 [tool.pyrefly]
 use-ignore-files = false
-project-includes = ["libs/observe_core/src"]
+project-includes = ["src"]
 project-excludes = [
     "**/node_modules",
     "**/__pycache__",
@@ -157,11 +158,12 @@ project-excludes = [
 ]
 search-path = [
     "src",
-    ".venv/lib/python3.13/site-packages",
+    # ".venv/lib/python3.14/site-packages",
+    ".venv/Lib/site-packages",
 ]
-python-platform = "linux"
-python-version = "3.13"
-python-interpreter-path = ".venv/bin/python3"
+python-platform = "win32"
+python-version = "3.14"
+python-interpreter-path = ".venv/Scripts/python.exe"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

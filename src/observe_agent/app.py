@@ -13,10 +13,11 @@ import os
 import sys
 from functools import lru_cache
 
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 # from observe_core import SessionMiddleware
 from observe_core.logger import get_logger
+from starlette.applications import Starlette
 
 sys.path.insert(0, os.path.abspath("src"))
 from langgraph_api.server import app as langgraph_app
@@ -45,7 +46,7 @@ def load_config() -> dict:
 
 
 @lru_cache(maxsize=1)
-def define_app(add_auth: bool = False) -> FastAPI:
+def define_app(add_auth: bool = False) -> Starlette:
     """Create and configure the FastAPI application instance.
 
     Args:

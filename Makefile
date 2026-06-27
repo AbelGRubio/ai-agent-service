@@ -57,4 +57,4 @@ ci: check test   ## Run full QA pipeline
 .PHONY: check
 check: ## Run pre-commit checks
 	@echo "$(ARROW) Running pre-commit checks..."
-	@uv run pre-commit run --all-files
+	@uv run pre-commit run --all-files --hook-stage
