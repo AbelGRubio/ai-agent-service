@@ -77,17 +77,20 @@ async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> 
 
     # 3. Llamada al LLM para reformular
     # reformulated_query = await chain.ainvoke({"question": user_query})
-    query_text = reformulated_query.content.strip()
-    logger.info(reformulated_query)
+    query_text = reformulated_query.content
+
     if query_text == "NO_RAG":
         logger.info("El LLM determinó que no se necesita RAG.")
         return {"rag_context": []}
+
+    if isinstance(reformulated_query, list):
+        query_text = " ".join(reformulated_query)
 
     try:
         logger.info(f"Pregunta detectada: {query_text}. Ejecutando búsqueda...")
         # `retriever.invoke` may be synchronous or asynchronous depending on
         # implementation. This code preserves the existing call-site semantics.
-        docs = await asyncio.to_thread(retriever.invoke, query_text)
+        docs = await asyncio.to_thread(retriever.invoke, str(query_text))
         documents = [doc.page_content for doc in docs]
         # Normalize retrieved documents into a minimal payload for the agent
         state["rag_context"] = documents

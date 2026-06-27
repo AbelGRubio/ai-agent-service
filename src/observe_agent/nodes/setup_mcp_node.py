@@ -59,7 +59,7 @@ async def create_mcp_bridge_tools(session: Any) -> list[Callable[..., Any]]:
             content = await session.read_resource(uri)
             return str(content)
 
-        mcp_resource_tools.append(resource_tool)
+        mcp_resource_tools.append(resource_tool)  # type: ignore[bad-assignment]
 
     return mcp_resource_tools
 
@@ -85,15 +85,15 @@ async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict[str,
     token: str = ""
     if settings.jwt_protected:
         logger.info("Retrieving token...")
-        token = await asyncio.to_thread(get_jwt_token)
+        token = await asyncio.to_thread(get_jwt_token)  # type: ignore[bad-assignment]
 
     for name, raw_conn in mcp_config.items():
         logger.info(f"Parsing information server: '{name}'")
-        validated_conn = ConnectionConfig(**raw_conn)
+        validated_conn = ConnectionConfig(**raw_conn)  # type: ignore[bad-argument-type]
         if settings.jwt_protected:
             validated_conn.add_token(token)
         conn = validated_conn.model_dump()
-        mcp_config[name] = conn
+        mcp_config[name] = conn  # type: ignore[unsupported-operation]
 
     openai_api_key = state.get("openai_api_key")
     return {"mcp_config": mcp_config, "openai_api_key": openai_api_key}

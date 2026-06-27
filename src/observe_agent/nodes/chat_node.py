@@ -65,7 +65,7 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> Command:
     mcp_config: MCPConfig = copy.deepcopy(state.get("mcp_config") or default_mcp_config)
 
     # Multi-server MCP client will manage sessions to one or more MCP servers
-    mcp_client = MultiServerMCPClient(mcp_config)
+    mcp_client = MultiServerMCPClient(mcp_config)  # type: ignore[bad-argument-type]
     mcp_tools = []
 
     # Use an AsyncExitStack so all MCP sessions are closed on exit

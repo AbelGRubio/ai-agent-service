@@ -47,4 +47,4 @@ class AgentState(CopilotKitState):
 
     mcp_config: MCPConfig | None
     openai_api_key: str | None
-    rag_context: str | None
+    rag_context: list | None

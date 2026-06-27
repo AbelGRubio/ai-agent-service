@@ -28,9 +28,9 @@ llm = ChatOpenAI(
 
 nodo_rag_con_retriever = partial(rag_node, retriever=mi_retriever, llm=llm)
 
-workflow.add_node("setup", setup_mcp_node)
+workflow.add_node("setup", setup_mcp_node)  # type: ignore[no-matching-overload]
 workflow.add_node("retrieve", nodo_rag_con_retriever)
-workflow.add_node("agent", agent_node)
+workflow.add_node("agent", agent_node)  # type: ignore[no-matching-overload]
 
 workflow.set_entry_point("setup")
 workflow.add_edge("setup", "retrieve")
