@@ -80,7 +80,7 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> Command:
         # Instantiate the LLM client with the configured model and API key
         model = ChatOpenAI(
             model="gpt-4o",
-            api_key=settings.llm_api_key.get_secret_value(),
+            api_key=settings.openai_api_key.get_secret_value(),
             base_url=settings.model_base_url,
         )
         # Inject RAG (retrieval) context into the system prompt if present.

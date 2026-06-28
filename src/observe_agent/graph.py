@@ -22,7 +22,7 @@ mi_retriever = Retriever()
 llm = ChatOpenAI(
     model="gpt-4o-mini",
     temperature=0,
-    api_key=settings.llm_api_key.get_secret_value(),
+    api_key=settings.openai_api_key.get_secret_value(),
     base_url=settings.model_base_url,
 )
 
