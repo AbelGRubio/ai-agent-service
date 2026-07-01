@@ -1,7 +1,7 @@
 [project]
 name = "agent"
 version = "0.1.0"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
   "observe-core",
   "litellm==1.89.3",
@@ -20,13 +20,6 @@ dependencies = [
 
 [tool.uv.sources]
 observe-core = { path = "../../libs/observe_core", editable = false }
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-# O si usas hatchling (muy común con uv):
-[tool.hatch.build.targets.wheel]
-packages = ["src/observe_agent"]
 
 [dependency-groups]
 dev = [
@@ -73,8 +66,6 @@ omit = [
 [tool.coverage.report]
 fail_under = 80          # número entero o float (ej: 85.5)
 precision = 2            # cuántos decimales mostrar
-
-
 
 [tool.ruff]
 preview = true
@@ -165,5 +156,3 @@ python-platform = "win32"
 python-version = "3.14"
 python-interpreter-path = ".venv/Scripts/python.exe"
 
-[tool.setuptools]
-package-dir = {"" = "src"}

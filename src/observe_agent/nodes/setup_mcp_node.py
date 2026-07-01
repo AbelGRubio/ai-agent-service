@@ -64,7 +64,7 @@ async def create_mcp_bridge_tools(session: Any) -> list[Callable[..., Any]]:
     return mcp_resource_tools
 
 
-async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict[str, object]:
+async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> AgentState:
     """Normalize MCP config and optionally attach authentication tokens.
 
     Args:
@@ -96,4 +96,7 @@ async def setup_mcp_node(state: AgentState, config: RunnableConfig) -> dict[str,
         mcp_config[name] = conn  # type: ignore[unsupported-operation]
 
     openai_api_key = state.get("openai_api_key")
-    return {"mcp_config": mcp_config, "openai_api_key": openai_api_key}
+    state["openai_api_key"] = openai_api_key
+    state["mcp_config"] = mcp_config
+
+    return state

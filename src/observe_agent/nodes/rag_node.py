@@ -24,7 +24,7 @@ from observe_agent.rag.retriever import Retriever
 logger = get_logger(__name__)
 
 
-async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> dict[str, object]:
+async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> AgentState:
     """Retrieve relevant documents and return updated RAG context.
 
     This node performs retrieval using the provided `Retriever` instance and
@@ -56,18 +56,16 @@ async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> 
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
-            "Eres un experto en decidir si una consulta requiere buscar en documentos internos de la empresa. "
-            "Tu objetivo es transformar la pregunta del usuario en una consulta de búsqueda eficiente"
-            " para un sistema RAG. "
-            "\n\nREGLAS:"
-            "1. Si la pregunta requiere conocer documentos internos, políticas, manuales o datos específicos "
-            "de la empresa, devuelve la consulta de búsqueda optimizada."
-            "2. Si la pregunta es casual, de saludo o general (ej. 'hola', 'qué tal'), responde 'NO_RAG'."
-            "\n\nEJEMPLOS:"
-            "Usuario: ¿Cuál es la política de empresa? -> Consulta: política interna de la empresa documento oficial"
-            "Usuario: Hola, ¿cómo estás? -> NO_RAG"
-            "Usuario: ¿Cómo pido vacaciones? -> Consulta: proceso solicitud vacaciones política empresa"
-            "\n\nSi no estás seguro, asume que se necesita RAG para asegurar la veracidad.",
+            "You are an expert at determining whether a user query requires searching through internal company documents. "
+            "Your goal is to transform the user's question into an efficient search query for a RAG (Retrieval-Augmented Generation) system. "
+            "\n\nRULES:"
+            "1. If the question requires knowledge of internal documents, policies, manuals, or specific company data, return the optimized search query."
+            "2. If the question is casual, a greeting, or general (e.g., 'hello', 'how are you'), respond with 'NO_RAG'."
+            "\n\nEXAMPLES:"
+            "User: What is the company policy? -> Query: company internal policy official document"
+            "User: Hello, how are you? -> NO_RAG"
+            "User: How do I request time off? -> Query: vacation request process company policy"
+            "\n\nIf you are unsure, assume that RAG is needed to ensure accuracy.",
         ),
         ("user", "{question}"),
     ])
@@ -81,7 +79,8 @@ async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> 
 
     if query_text == "NO_RAG":
         logger.info("El LLM determinó que no se necesita RAG.")
-        return {"rag_context": []}
+        state['rag_context'] = []
+        return state
 
     if isinstance(reformulated_query, list):
         query_text = " ".join(reformulated_query)
@@ -100,4 +99,6 @@ async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> 
         documents = []
         raise ValueError(f"Failed to retrieve documents: {e}") from e
 
-    return {"rag_context": documents}
+    state['rag_context'] = documents
+
+    return state
