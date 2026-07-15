@@ -1,21 +1,15 @@
 """Entry point."""
 
-import logging
-
 import uvicorn
 from observe_agent.app import define_app
-from observe_core.logger import get_logger
+from observe_core.logger import get_logger, propague_loggers
+
 
 logger = get_logger(__name__)
 
 app = define_app()
 
-# To put all loggers in same format.
-for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
-    uvicorn_logger = logging.getLogger(name)
-    uvicorn_logger.handlers = logger.handlers
-    uvicorn_logger.setLevel(logging.DEBUG)
-    uvicorn_logger.propagate = False
+propague_loggers()
 
 
 if __name__ == "__main__":
