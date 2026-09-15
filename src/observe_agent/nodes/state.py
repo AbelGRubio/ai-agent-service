@@ -15,7 +15,7 @@ from copilotkit import CopilotKitState
 from observe_core.logger import get_logger
 from pydantic import BaseModel, Field
 
-from observe_agent.mcp_types import MCPConfig
+from observe_agent.utils.mcp_types import MCPConfig
 
 logger = get_logger(__name__)
 

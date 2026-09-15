@@ -22,8 +22,8 @@ from langchain_core.tools import tool
 from langchain_mcp_adapters.resources import load_mcp_resources
 from observe_core.logger import get_logger
 
-from observe_agent.jwt_utils import get_jwt_token
-from observe_agent.mcp_types import MCPConfig
+from observe_agent.utils.jwt_utils import get_jwt_token
+from observe_agent.utils.mcp_types import MCPConfig
 from observe_agent.nodes.state import AgentState, ConnectionConfig
 from observe_agent.settings import default__mcp_config, get_settings
 

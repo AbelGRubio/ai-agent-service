@@ -27,8 +27,8 @@ from langgraph.graph import END
 from langgraph.types import Command
 from observe_core.logger import get_logger
 
-from observe_agent.mcp_manager import get_mcp_manager
-from observe_agent.mcp_types import MCPConfig
+from observe_agent.utils.mcp_manager import get_mcp_manager
+from observe_agent.utils.mcp_types import MCPConfig
 from observe_agent.nodes.state import AgentState
 from observe_agent.settings import default__mcp_config, get_settings
 
