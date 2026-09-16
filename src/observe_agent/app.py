@@ -7,15 +7,13 @@ Prometheus metrics instrumentation.
 
 import json
 import os
-
-from prometheus_fastapi_instrumentator import Instrumentator
 import sys
 from functools import lru_cache
 
 from fastapi.middleware.cors import CORSMiddleware
-
 from observe_core import SessionMiddleware
 from observe_core.logger import get_logger
+from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.applications import Starlette
 
 sys.path.insert(0, os.path.abspath("src"))

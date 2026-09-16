@@ -26,7 +26,7 @@ class AgentSettings(CustomSettings):
 
     model_name: str = Field(default="gpt-4o", alias="MODEL_NAME")
     openai_api_key: SecretStr = Field(default=SecretStr(""), alias="OPENAI_API_KEY")
-    llm_api_key: SecretStr = Field(default=SecretStr(""), alias="LLM_API_KEY")
+    llm_api_key: SecretStr = Field(default=SecretStr(""), alias="LITELLM_MASTER_KEY")
     model_base_url: str = Field(default="http://localhost:5000", alias="MODEL_BASE_URL")
 
     model_config = SettingsConfigDict(

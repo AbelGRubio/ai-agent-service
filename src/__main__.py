@@ -16,7 +16,7 @@ if __name__ == "__main__":
     logger.debug("Starting...")
     uvicorn.run(
         app=app,
-        host="10.0.0.2",
+        host="localhost",
         port=8123,
         log_config=None,
         reload=False,

@@ -10,12 +10,15 @@ dependencies = [
   "openai",
   "copilotkit",
   "langgraph",
+  "langgraph-api",
   "pydantic_settings",
   "langchain-openai",
   "langchain-mcp-adapters",
   "langgraph-cli[inmem]",
   "langgraph-sdk>=0.4.2",
   "pyjwt>=2.13.0",
+  "langchain-google-genai>=4.4.0",
+  "langchain-litellm>=0.7.1",
 ]
 
 [tool.uv.sources]
@@ -155,4 +158,3 @@ search-path = [
 python-platform = "win32"
 python-version = "3.14"
 python-interpreter-path = ".venv/Scripts/python.exe"
-

@@ -56,11 +56,15 @@ async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> 
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
-            "You are an expert at determining whether a user query requires searching through internal company documents. "
-            "Your goal is to transform the user's question into an efficient search query for a RAG (Retrieval-Augmented Generation) system. "
+            "You are an expert at determining whether a user query requires searching through internal "
+            "company documents. "
+            "Your goal is to transform the user's question into an efficient search query for a RAG "
+            "(Retrieval-Augmented Generation) system. "
             "\n\nRULES:"
-            "1. If the question requires knowledge of internal documents, policies, manuals, or specific company data, return the optimized search query."
-            "2. If the question is casual, a greeting, or general (e.g., 'hello', 'how are you'), respond with 'NO_RAG'."
+            "1. If the question requires knowledge of internal documents, policies, manuals, or specific company data, "
+            "return the optimized search query."
+            "2. If the question is casual, a greeting, or general (e.g., 'hello', 'how are you'), respond with "
+            "'NO_RAG'."
             "\n\nEXAMPLES:"
             "User: What is the company policy? -> Query: company internal policy official document"
             "User: Hello, how are you? -> NO_RAG"
@@ -79,7 +83,7 @@ async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> 
 
     if query_text == "NO_RAG":
         logger.info("El LLM determinó que no se necesita RAG.")
-        state['rag_context'] = []
+        state["rag_context"] = []
         return state
 
     if isinstance(reformulated_query, list):
@@ -99,6 +103,6 @@ async def rag_node(state: AgentState, retriever: Retriever, llm: ChatOpenAI) -> 
         documents = []
         raise ValueError(f"Failed to retrieve documents: {e}") from e
 
-    state['rag_context'] = documents
+    state["rag_context"] = documents
 
     return state
