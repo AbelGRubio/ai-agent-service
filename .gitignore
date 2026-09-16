@@ -2,3 +2,8 @@
 
 coverage*
 .coverage
+
+.langgraph_api
+
+**/.logs
+.env
