@@ -1,50 +1,42 @@
-# Agent Service
+# AI Agent Scaffold
 
-Python service that runs the conversational agent layer for the monorepo.
+This repository provides a reusable scaffold for building modular AI agents and agent-based services. The goal is to offer a minimal, extensible structure that can be reused across AI projects to implement custom agents, integrate different LLM providers, and compose agent behaviors from smaller "nodes".
 
-## Purpose
+Key ideas
 
-- Orchestrates AI-agent interactions
-- Integrates with MCP tools and upstream services
-- Exposes an HTTP interface for local development and container runtime
+- Reusable scaffold: a starting point for new AI-agent projects.
+- Modular nodes: agent behavior is composed from small, testable node components.
+- RAG support: retrieval-augmented generation (RAG) components for knowledge grounding.
+- LLM abstraction: an inheritance-based pattern to implement different LLM providers (e.g., OpenAI, Google) from a common base.
 
-## Location in the Monorepo
+Repository structure (high-level)
 
-- Source code: `apps/agent/src/observe_agent`
-- Service entrypoint: `apps/agent/src/__main__.py`
-- Shared library dependency: `libs/observe_core`
+- nodes/         : Definitions of individual agent nodes (actions, skills, transforms).
+- rag/           : RAG components for document stores, retrievers, and indexers.
+- agent/ or llm/ : LLM abstraction and concrete implementations. Use the inheritance pattern to extend a base agent/LLM class and provide provider-specific logic (OpenAI, Google, etc.).
+- examples/      : Example agent configurations and usage (optional).
 
-## Requirements
+How the inheritance pattern works
 
-- Python 3.13
-- `uv`
+1. Define a base LLM/Agent interface or abstract class describing common methods (generate, stream, configure).
+2. Implement provider-specific subclasses that override configuration and request/response handling.
+3. Configure which implementation the scaffold should use via a small factory or dependency-injection layer.
 
-## Setup
+Getting started (quick)
 
-```bash
-cd apps/agent
-uv sync
-```
+1. Clone the repo and open it in your project:
 
-## Run Locally
+   git clone <repo-url>
+   cd ai-agent-service
 
-```bash
-cd apps/agent
-PYTHONPATH=src uv run python src/__main__.py
-```
+2. Inspect the nodes/ folder and create a new node to encapsulate a behavior.
+3. Add a provider implementation under agent/ or llm/ to connect to OpenAI, Google, or other APIs.
+4. Wire nodes and the LLM implementation into an agent composition and run locally.
 
-Default local endpoint:
+Contributing
 
-- `http://127.0.0.1:8123`
+Contributions are welcome. Prefer small, focused PRs that add well-documented nodes, provider adapters, or example agents.
 
-## Docker Build
+License
 
-```bash
-cd apps/agent
-make docker-build
-```
-
-## Notes
-
-- This project uses a local path dependency to `observe_core` in `libs/observe_core`.
-- Docker/compose deployment is centralized in `infra/` at repo root.
+Specify the project license here (e.g. MIT) and any relevant notices.
