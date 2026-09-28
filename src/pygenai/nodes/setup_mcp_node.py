@@ -1,7 +1,7 @@
 """Setup MCP node and bridge tools.
 
 ========================================================================================================================
-Name:         apps/agent/src/observe_agent/nodes/setup_mcp_node.py
+Name:         apps/agent/src/pygenai/nodes/setup_mcp_node.py
 Description:  Build MCP resource-based tools and normalize MCP connection
               configuration for the agent runtime.
 Project:      Observe me
@@ -22,10 +22,10 @@ from langchain_core.tools import tool
 from langchain_mcp_adapters.resources import load_mcp_resources
 from observe_core.logger import get_logger
 
-from observe_agent.nodes.state import AgentState, ConnectionConfig
-from observe_agent.settings import default__mcp_config, get_settings
-from observe_agent.utils.jwt_utils import get_jwt_token
-from observe_agent.utils.mcp_types import MCPConfig
+from pygenai.nodes.state import AgentState, ConnectionConfig
+from pygenai.settings import default__mcp_config, get_settings
+from pygenai.utils.jwt_utils import get_jwt_token
+from pygenai.utils.mcp_types import MCPConfig
 
 logger = get_logger(__name__)
 

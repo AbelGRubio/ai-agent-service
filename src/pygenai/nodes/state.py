@@ -1,7 +1,7 @@
 """Node-local state models for the agent workflow.
 
 ========================================================================================================================
-Name:         apps/agent/src/observe_agent/nodes/state.py
+Name:         apps/agent/src/pygenai/nodes/state.py
 Description:  Pydantic models and state container types used by nodes.
 Project:      Observe me
 Date:         2026-06-19 00:00:00
@@ -15,7 +15,7 @@ from copilotkit import CopilotKitState
 from observe_core.logger import get_logger
 from pydantic import BaseModel, Field
 
-from observe_agent.utils.mcp_types import MCPConfig
+from pygenai.utils.mcp_types import MCPConfig
 
 logger = get_logger(__name__)
 

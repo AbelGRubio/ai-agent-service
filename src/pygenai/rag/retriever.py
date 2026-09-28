@@ -15,7 +15,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from observe_core.logger import get_logger
 from pydantic import PrivateAttr
 from langchain_litellm import LiteLLMEmbeddings
-from observe_agent.settings import get_settings
+from pygenai.settings import get_settings
 
 logger = get_logger(__name__)
 settings = get_settings()

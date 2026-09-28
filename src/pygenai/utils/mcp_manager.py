@@ -5,7 +5,7 @@ across the agent runtime and caches tool lists per MCP configuration hash.
 The manager is safe for concurrent access via an `asyncio.Lock`.
 
 ========================================================================================================================
-Name:         apps/agent/src/observe_agent/mcp_manager.py
+Name:         apps/agent/src/pygenai/mcp_manager.py
 Description:  Manage MCP ClientSession lifecycle and tool caching.
 Project:      Observe me
 Date:         2026-06-19 00:00:00
@@ -44,7 +44,7 @@ class MCPManager:
     """
 
     def __init__(self) -> None:
-        """Initialize the MCPManager with empty session and cache state."""
+        """Initialize the MCPManager with empty sessiback zzzon and cache state."""
         # Active sessions keyed by MCP server name. Sessions are retained until
         # the configuration changes or `close_all` is explicitly called.
         self.sessions: dict[str, ClientSession] = {}

@@ -1,7 +1,7 @@
 """JWT helper utilities used by the agent workflow.
 
 ========================================================================================================================
-Name:         apps/agent/src/observe_agent/jwt_utils.py
+Name:         apps/agent/src/pygenai/jwt_utils.py
 Description:  Provide helper functions to obtain JWT access tokens for MCP calls.
 Project:      Observe me
 Date:         2026-06-19 00:00:00
@@ -14,7 +14,7 @@ Copyright ©2026. All rights reserved.
 import httpx
 from observe_core.logger import get_logger
 
-from observe_agent.settings import get_settings
+from pygenai.settings import get_settings
 
 logger = get_logger(__name__)
 

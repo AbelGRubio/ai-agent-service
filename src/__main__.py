@@ -1,7 +1,7 @@
 """Entry point."""
 
 import uvicorn
-from observe_agent.app import define_app
+from pygenai.app import define_app
 from observe_core.logger import get_logger, propague_loggers
 
 

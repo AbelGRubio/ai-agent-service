@@ -1,5 +1,5 @@
 [project]
-name = "agent"
+name = "pygenai"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
@@ -112,7 +112,7 @@ ignore = ["ANN401"]
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["observe_agent"]
+known-first-party = ["pygenai"]
 section-order = [
     "future",
     "standard-library",

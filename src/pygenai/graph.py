@@ -4,14 +4,14 @@ from functools import partial
 from langgraph.graph import StateGraph
 from observe_core.logger import get_logger
 
-from observe_agent.nodes.chat_node import agent_node
+from pygenai.nodes.chat_node import agent_node
 
-from observe_agent.nodes.rag_node import rag_node
-from observe_agent.nodes.setup_mcp_node import setup_mcp_node
-from observe_agent.nodes.state import AgentState
+from pygenai.nodes.rag_node import rag_node
+from pygenai.nodes.setup_mcp_node import setup_mcp_node
+from pygenai.nodes.state import AgentState
 
-from observe_agent.rag.retriever import Retriever
-from observe_agent.settings import get_settings
+from pygenai.rag.retriever import Retriever
+from pygenai.settings import get_settings
 from langchain_litellm import ChatLiteLLM
 
 logger = get_logger(__name__)

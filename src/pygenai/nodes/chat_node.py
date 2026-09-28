@@ -1,7 +1,7 @@
 """Main entry point for the CopilotKit agent graph.
 
 ========================================================================================================================
-Name:         apps/agent/src/observe_agent/nodes/chat_node.py
+Name:         apps/agent/src/pygenai/nodes/chat_node.py
 Description:  Entrypoint node that runs the copilot/agent using configured MCP tools and an LLM model.
 Project:      Observe me
 Date:         2026-06-19 00:00:00
@@ -27,10 +27,10 @@ from langgraph.graph import END
 from langgraph.types import Command
 from observe_core.logger import get_logger
 
-from observe_agent.nodes.state import AgentState
-from observe_agent.settings import default__mcp_config, get_settings
-from observe_agent.utils.mcp_manager import get_mcp_manager
-from observe_agent.utils.mcp_types import MCPConfig
+from pygenai.nodes.state import AgentState
+from pygenai.settings import default__mcp_config, get_settings
+from pygenai.utils.mcp_manager import get_mcp_manager
+from pygenai.utils.mcp_types import MCPConfig
 
 logger = get_logger(__name__)
 manager = get_mcp_manager()
