@@ -1,7 +1,7 @@
 import pytest
 
-import pygenai.files.db as db_mod
-from pygenai.files.db import MongoFileSystemUnitOfWork
+import pygenai.rag.files.db as db_mod
+from pygenai.rag.files import MongoFileSystemUnitOfWork
 
 
 class FakeFileObj:

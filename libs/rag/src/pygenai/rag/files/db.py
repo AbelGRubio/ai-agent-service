@@ -115,7 +115,8 @@ class MongoFileSystemUnitOfWork(AbstractFileSystemUnitOfWork):
                 .sort([("uploadDate", -1)])
                 .limit(1)
             )
-            doc = next(cursor, None)
+            docs = list(cursor)
+            doc = docs[0] if docs else None
             if not doc:
                 raise FileNotFoundError(f"Object '{key}' not found in GridFS")
             file_obj = self._fs.get(doc["_id"])
@@ -182,7 +183,8 @@ class MongoFileSystemUnitOfWork(AbstractFileSystemUnitOfWork):
             cursor = (
                 self._db.fs.files.find({"filename": old_key, "metadata.route": self._route}).sort([("uploadDate", -1)]).limit(1)
             )
-            doc = next(cursor, None)
+            docs = list(cursor)
+            doc = docs[0] if docs else None
             if not doc:
                 return False
             src_file = self._fs.get(doc["_id"])

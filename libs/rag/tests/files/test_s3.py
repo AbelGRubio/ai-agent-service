@@ -2,8 +2,8 @@ import io
 
 import pytest
 
-import pygenai.files.s3 as s3_mod
-from pygenai.files.s3 import S3FileSystemUnitOfWork
+import pygenai.rag.files.s3 as s3_mod
+from pygenai.rag.files.s3 import S3FileSystemUnitOfWork
 
 
 class FakeS3Client:

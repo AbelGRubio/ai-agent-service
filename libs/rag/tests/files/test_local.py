@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pygenai.files.local import LocalFileSystemUnitOfWork
+from pygenai.rag.files.local import LocalFileSystemUnitOfWork
 
 
 def test_local_basic_operations(tmp_path):
