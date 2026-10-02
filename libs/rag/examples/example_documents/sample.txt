@@ -1,0 +1,2 @@
+Pygenai makes document pipelines easy.
+It supports loaders, chunkers, and retrievers.

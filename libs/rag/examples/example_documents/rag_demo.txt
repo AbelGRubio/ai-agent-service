@@ -1,0 +1,10 @@
+Pygenai is a Python toolkit for building AI assistants and retrieval pipelines.
+
+The project includes document loaders for text, markdown, CSV, PDF, and web sources.
+It also supports chunking strategies such as fixed-size, token-based, semantic, and structural segmentation.
+
+For retrieval, the system can search with vector similarity, hybrid ranking, and rerankers.
+This makes it useful for building enterprise RAG systems with grounding from local documents.
+
+A typical workflow starts by loading raw files, splitting them into chunks, storing embeddings,
+then retrieving the most relevant context to answer a user's question.
