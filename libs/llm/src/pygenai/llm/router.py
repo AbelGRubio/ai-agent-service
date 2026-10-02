@@ -17,9 +17,9 @@ import asyncio
 import logging
 from typing import Any
 
-from pygenai.llm.base import FallbackConfig, LLMProvider, LLMResponse, Message, ProviderConfig, RetryConfig
-from pygenai.llm.exceptions import NoAvailableProvidersError, ProviderError, RateLimitError
-from pygenai.llm.providers import AnthropicProvider, AzureOpenAIProvider, BedrockProvider, OllamaProvider, OpenAIProvider
+from .base import FallbackConfig, LLMProvider, LLMResponse, Message, ProviderConfig, RetryConfig
+from .exceptions import NoAvailableProvidersError, ProviderError, RateLimitError
+from .providers import AnthropicProvider, AzureOpenAIProvider, BedrockProvider, OllamaProvider, OpenAIProvider
 
 logger = logging.getLogger(__name__)
 

@@ -18,8 +18,8 @@ from typing import Any
 
 import litellm
 
-from pygenai.llm.base import LLMProvider, LLMResponse, Message, MessageUsage, ProviderConfig
-from pygenai.llm.exceptions import AuthenticationError, ConfigurationError, InvalidResponseError, ProviderError
+from ..base import LLMProvider, LLMResponse, Message, MessageUsage, ProviderConfig
+from ..exceptions import AuthenticationError, ConfigurationError, InvalidResponseError, ProviderError
 
 
 class BedrockProvider(LLMProvider):

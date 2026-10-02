@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from pygenai.llm.base import LLMResponse
+from ..base import LLMResponse
 
 logger = logging.getLogger(__name__)
 

@@ -17,8 +17,8 @@ from typing import Any
 
 import litellm
 
-from pygenai.llm.base import LLMProvider, LLMResponse, Message, MessageUsage, ProviderConfig
-from pygenai.llm.exceptions import ConfigurationError, InvalidResponseError, ProviderError
+from ..base import LLMProvider, LLMResponse, Message, MessageUsage, ProviderConfig
+from ..exceptions import ConfigurationError, InvalidResponseError, ProviderError
 
 
 class OllamaProvider(LLMProvider):
