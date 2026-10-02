@@ -1,3 +1,7 @@
+---
+name: add-file-header
+description: 'Add a standard header to new files or include in existing ones.'
+---
 # Add file header skill
 
 ## Objective

@@ -49,6 +49,8 @@ from .vectorstores import (
     VectorStore,
 )
 
+__version__ = "0.1.0"
+
 __all__ = [
     "BaseEmbeddings",
     "BaseRetriever",

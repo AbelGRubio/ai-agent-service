@@ -18,6 +18,7 @@ Entry point for development agents. Keep this file short and use it as a router.
 
 - Add header: `skills/add-file-header/SKILL.md`
 - Conventions: `skills/pygenai-conventions/SKILL.md`
+- Readme generator: `skills/readme-generator/SKILL.md`
 
 ## Scope
 
