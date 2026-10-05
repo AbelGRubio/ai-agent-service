@@ -142,7 +142,6 @@ class MCPManager:
             self.tools_cache[new_hash] = all_tools
             return all_tools
 
-
 @lru_cache(maxsize=1)
 def get_mcp_manager() -> MCPManager:
     """Return a cached MCPManager singleton.

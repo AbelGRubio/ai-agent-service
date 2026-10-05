@@ -10,8 +10,8 @@ import os
 import sys
 from fastapi.middleware.cors import CORSMiddleware
 from functools import lru_cache
-from observe_core import SessionMiddleware
-from prometheus_fastapi_instrumentator import Instrumentator
+# from observe_core import SessionMiddleware
+# from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.applications import Starlette
 
 from pygenai.logger import get_logger
@@ -55,7 +55,7 @@ def define_app(add_auth: bool = False) -> Starlette:
     """
     load_config()
 
-    langgraph_app.add_middleware(SessionMiddleware)
+    # langgraph_app.add_middleware(SessionMiddleware)
 
     # if add_auth:
     #     langgraph_app.add_middleware(AuthMiddleware)
@@ -68,7 +68,7 @@ def define_app(add_auth: bool = False) -> Starlette:
         allow_headers=["*"],
     )
 
-    Instrumentator().instrument(langgraph_app).expose(langgraph_app)
+    # Instrumentator().instrument(langgraph_app).expose(langgraph_app)
 
     logger.info("Define fastapi server.")
     return langgraph_app

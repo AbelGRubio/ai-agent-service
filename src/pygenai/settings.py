@@ -2,17 +2,14 @@
 
 from functools import lru_cache
 
-from observe_core.custom_settings import CustomSettings
 from pydantic import Field, SecretStr
-from pydantic_settings import SettingsConfigDict
+from pydantic_settings import SettingsConfigDict, BaseSettings
 
 __version__ = "0.1.0"
 
 
-class AgentSettings(CustomSettings):
+class AgentSettings(BaseSettings):
     """Settings parsed from environment variables for the agent runtime."""
-
-    __use_conf_file__: bool = False
 
     jwt_protected: bool = Field(default=True, alias="JWT_PROTECTED")
     jwt_url: str = Field(
