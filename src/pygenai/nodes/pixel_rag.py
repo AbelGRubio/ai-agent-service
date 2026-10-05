@@ -11,7 +11,7 @@ Copyright ©2026. All rights reserved.
 ========================================================================================================================
 """
 #
-# from observe_core.logger import get_logger
+# from pygenai.logger import get_logger
 #
 # from pygenai.nodes.state import AgentState
 #

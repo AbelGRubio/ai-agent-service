@@ -12,14 +12,13 @@ Copyright ©2026. All rights reserved.
 """
 
 import asyncio
-
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from observe_core.logger import get_logger
-
-from pygenai.nodes.state import AgentState
 from pygenai.rag.retriever import Retriever
+
+from pygenai.logger import get_logger
+from pygenai.nodes.state import AgentState
 
 logger = get_logger(__name__)
 

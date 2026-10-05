@@ -15,13 +15,12 @@ Copyright ©2026. All rights reserved.
 import asyncio
 import copy
 from collections.abc import Callable
-from typing import Any
-
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from langchain_mcp_adapters.resources import load_mcp_resources
-from observe_core.logger import get_logger
+from typing import Any
 
+from pygenai.logger import get_logger
 from pygenai.nodes.state import AgentState, ConnectionConfig
 from pygenai.settings import default__mcp_config, get_settings
 from pygenai.utils.jwt_utils import get_jwt_token

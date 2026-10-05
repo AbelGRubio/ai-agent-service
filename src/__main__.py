@@ -1,9 +1,9 @@
 """Entry point."""
 
 import uvicorn
-from pygenai.app import define_app
-from observe_core.logger import get_logger, propague_loggers
 
+from pygenai.app import define_app
+from pygenai.logger import get_logger, propague_loggers
 
 logger = get_logger(__name__)
 

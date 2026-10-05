@@ -1,13 +1,11 @@
-"""OpenAI provider implementation.
+"""LiteLLM unified provider implementation.
 
 ========================================================================================================================
-Name:         genai/llm/providers/openai_provider.py
-Description:  OpenAI LLM provider using LiteLLM
+Name:         genai/llm/providers/litellm_provider.py
+Description:  LLM provider using LiteLLM Proxy / Gateway architecture
 Project:      Pygenai
-Date:         2026-10-02 18:59:23
-Status:       Development
-
-Copyright ©2026 All rights reserved.
+Date:         2026-10-04
+Status:       Refactored
 ========================================================================================================================
 """
 
@@ -18,23 +16,15 @@ from typing import Any
 
 import litellm
 
-from ..base import LLMProvider, LLMResponse, Message, MessageUsage, ProviderConfig
-from ..exceptions import AuthenticationError, ConfigurationError, InvalidResponseError, ProviderError
+from pygenai.llm.base import LLMProvider, LLMResponse, Message, MessageUsage, ProviderConfig
+from pygenai.llm.exceptions import AuthenticationError, ConfigurationError, InvalidResponseError, ProviderError
 
 
-class OpenAIProvider(LLMProvider):
-    """OpenAI LLM provider implementation."""
-
-    AVAILABLE_MODELS = [
-        "gpt-4o",
-        "gpt-4o-mini",
-        "gpt-4-turbo",
-        "gpt-4",
-        "gpt-3.5-turbo",
-    ]
+class LiteLLMProvider(LLMProvider):
+    """Unified LLM provider implementation using LiteLLM."""
 
     def __init__(self, config: ProviderConfig) -> None:
-        """Initialize OpenAI provider.
+        """Initialize LiteLLM provider.
 
         Args:
             config: Provider configuration.
@@ -44,12 +34,16 @@ class OpenAIProvider(LLMProvider):
         """
         super().__init__(config)
         self.validate_config()
-        self.api_key = config.api_key or os.getenv("OPENAI_API_KEY")
+
+        self.api_key = config.api_key or os.getenv("LITELLM_API_KEY")
         if not self.api_key:
-            raise AuthenticationError("openai", "OPENAI_API_KEY not provided in config or environment")
+            raise AuthenticationError("litellm", "API key not provided in config or environment")
+
+        if hasattr(config, "api_base") and config.api_base:
+            litellm.api_base = config.api_base
 
     def validate_config(self) -> bool:
-        """Validate OpenAI configuration.
+        """Validate configuration.
 
         Returns:
             bool: True if valid.
@@ -58,13 +52,11 @@ class OpenAIProvider(LLMProvider):
             ConfigurationError: If configuration is invalid.
         """
         if not self.config.model:
-            raise ConfigurationError("OpenAI provider requires 'model' to be specified")
-        if self.config.model not in self.AVAILABLE_MODELS:
-            raise ConfigurationError(f"Model '{self.config.model}' not available. Available: {self.AVAILABLE_MODELS}")
+            raise ConfigurationError("LiteLLM provider requires 'model' to be specified")
         return True
 
     async def generate(self, messages: list[Message], **kwargs: Any) -> LLMResponse:
-        """Generate response using OpenAI.
+        """Generate response using LiteLLM asynchronously.
 
         Args:
             messages: List of messages.
@@ -79,17 +71,17 @@ class OpenAIProvider(LLMProvider):
         try:
             formatted_messages = [{"role": msg.role, "content": msg.content} for msg in messages]
 
-            response = litellm.completion(
-                model=f"openai/{self.config.model}",
+            response = await litellm.acompletion(
+                model=self.config.model,
                 messages=formatted_messages,
                 api_key=self.api_key,
                 timeout=self.config.timeout,
-                num_retries=self.config.retry_config.max_retries,
+                num_retries=getattr(self.config, "retry_config", {}).get("max_retries", 2),
                 **kwargs,
             )
 
             if not response or not hasattr(response, "choices"):
-                raise InvalidResponseError("openai", "Empty or malformed response")
+                raise InvalidResponseError("litellm", "Empty or malformed response")
 
             content = response.choices[0].message.content
             usage = MessageUsage(
@@ -98,7 +90,7 @@ class OpenAIProvider(LLMProvider):
             )
 
             cost = litellm.completion_cost(
-                model=f"openai/{self.config.model}",
+                model=self.config.model,
                 prompt_tokens=usage.prompt_tokens,
                 completion_tokens=usage.completion_tokens,
             )
@@ -106,7 +98,7 @@ class OpenAIProvider(LLMProvider):
             return LLMResponse(
                 content=content,
                 model=self.config.model,
-                provider="openai",
+                provider="litellm",
                 usage=usage,
                 cost=cost,
                 metadata={
@@ -116,12 +108,4 @@ class OpenAIProvider(LLMProvider):
             )
 
         except Exception as e:
-            raise ProviderError("openai", str(e), e)
-
-    def get_available_models(self) -> list[str]:
-        """Get available OpenAI models.
-
-        Returns:
-            list[str]: List of model names.
-        """
-        return self.AVAILABLE_MODELS
+            raise ProviderError("litellm", str(e), e)

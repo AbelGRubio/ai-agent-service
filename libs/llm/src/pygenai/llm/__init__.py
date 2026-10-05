@@ -1,9 +1,9 @@
-"""Pypygenai LLM Module - Unified LLM Provider Abstraction.
+"""Py LLM Module - Unified LLM Provider Abstraction.
 
 ========================================================================================================================
-Name:         pygenai/llm/__init__.py
+Name:         /llm/__init__.py
 Description:  Main package exports for the LLM module
-Project:      Pypygenai
+Project:      Py
 Date:         2026-10-02 18:59:23
 Status:       Development
 
@@ -22,7 +22,6 @@ from pygenai.llm.base import (
     ProviderConfig,
     RetryConfig,
 )
-from pygenai.llm.callbacks import CostRecord, CostTracker
 from pygenai.llm.exceptions import (
     AuthenticationError,
     ConfigurationError,
@@ -33,14 +32,7 @@ from pygenai.llm.exceptions import (
     ProviderError,
     RateLimitError,
 )
-from pygenai.llm.providers import (
-    AnthropicProvider,
-    AzureOpenAIProvider,
-    BedrockProvider,
-    OllamaProvider,
-    OpenAIProvider,
-)
-from pygenai.llm.router import LLMRouter
+from pygenai.llm.litellm_provider import LiteLLMProvider
 
 __all__ = [
     # Base models and interfaces
@@ -52,16 +44,7 @@ __all__ = [
     "RetryConfig",
     "FallbackConfig",
     # Providers
-    "OpenAIProvider",
-    "AnthropicProvider",
-    "AzureOpenAIProvider",
-    "BedrockProvider",
-    "OllamaProvider",
-    # Router
-    "LLMRouter",
-    # Callbacks
-    "CostTracker",
-    "CostRecord",
+    "LiteLLMProvider",
     # Exceptions
     "LLMException",
     "ProviderError",

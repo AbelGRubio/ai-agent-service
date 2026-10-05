@@ -12,9 +12,9 @@ Copyright ©2026. All rights reserved.
 """
 
 from copilotkit import CopilotKitState
-from observe_core.logger import get_logger
 from pydantic import BaseModel, Field
 
+from pygenai.logger import get_logger
 from pygenai.utils.mcp_types import MCPConfig
 
 logger = get_logger(__name__)

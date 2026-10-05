@@ -13,7 +13,6 @@ Copyright ©2026. All rights reserved.
 
 import copy
 from contextlib import AsyncExitStack
-
 from copilotkit.langgraph import copilotkit_exit
 from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage
@@ -21,12 +20,11 @@ from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_openai import ChatOpenAI
-
 # from langchain_openai import ChatOpenAI
 from langgraph.graph import END
 from langgraph.types import Command
-from observe_core.logger import get_logger
 
+from pygenai.logger import get_logger
 from pygenai.nodes.state import AgentState
 from pygenai.settings import default__mcp_config, get_settings
 from pygenai.utils.mcp_manager import get_mcp_manager

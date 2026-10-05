@@ -1,18 +1,14 @@
 """Main entry point for the CopilotKit agent graph."""
-from functools import partial
 
+from langchain_litellm import ChatLiteLLM
 from langgraph.graph import StateGraph
-from observe_core.logger import get_logger
+from pygenai.rag.retriever import Retriever
 
+from pygenai.logger import get_logger
 from pygenai.nodes.chat_node import agent_node
-
-from pygenai.nodes.rag_node import rag_node
 from pygenai.nodes.setup_mcp_node import setup_mcp_node
 from pygenai.nodes.state import AgentState
-
-from pygenai.rag.retriever import Retriever
 from pygenai.settings import get_settings
-from langchain_litellm import ChatLiteLLM
 
 logger = get_logger(__name__)
 settings = get_settings()

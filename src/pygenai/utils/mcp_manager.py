@@ -21,12 +21,12 @@ import asyncio
 import hashlib
 import json
 from functools import lru_cache
-from typing import Any
-
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
 from mcp import ClientSession
-from observe_core.logger import get_logger
+from typing import Any
+
+from pygenai.logger import get_logger
 
 logger = get_logger(__name__)
 

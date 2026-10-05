@@ -3,7 +3,6 @@ name = "pygenai"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
-  "observe-core",
   "litellm==1.89.3",
   "langchain_community",
   "langchain[openai]",
@@ -20,9 +19,6 @@ dependencies = [
   "langchain-google-genai>=4.4.0",
   "langchain-litellm>=0.7.1",
 ]
-
-[tool.uv.sources]
-observe-core = { path = "../observability/libs/observe_core", editable = false }
 
 [dependency-groups]
 dev = [

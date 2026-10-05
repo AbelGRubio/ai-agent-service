@@ -11,9 +11,9 @@ Copyright ©2026. All rights reserved.
 ========================================================================================================================
 """
 
-import httpx
-from observe_core.logger import get_logger
+import httpx2
 
+from pygenai.logger import get_logger
 from pygenai.settings import get_settings
 
 logger = get_logger(__name__)
@@ -41,7 +41,7 @@ async def get_jwt_token() -> str:
 
     # Use an async HTTP client to perform the token request. This call is
     # awaited to avoid blocking the async event loop.
-    async with httpx.AsyncClient() as client:
+    async with httpx2.AsyncClient() as client:
         response = await client.post(
             settings.jwt_url,
             data={"grant_type": "client_credentials"},

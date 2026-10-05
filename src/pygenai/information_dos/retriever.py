@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
@@ -12,9 +11,10 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from observe_core.logger import get_logger
 from pydantic import PrivateAttr
-from langchain_litellm import LiteLLMEmbeddings
+from typing import Any
+
+from pygenai.logger import get_logger
 from pygenai.settings import get_settings
 
 logger = get_logger(__name__)

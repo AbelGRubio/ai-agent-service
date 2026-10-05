@@ -8,13 +8,13 @@ Prometheus metrics instrumentation.
 import json
 import os
 import sys
-from functools import lru_cache
-
 from fastapi.middleware.cors import CORSMiddleware
+from functools import lru_cache
 from observe_core import SessionMiddleware
-from observe_core.logger import get_logger
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.applications import Starlette
+
+from pygenai.logger import get_logger
 
 sys.path.insert(0, os.path.abspath("src"))
 from langgraph_api.server import app as langgraph_app
