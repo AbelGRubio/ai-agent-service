@@ -5,6 +5,7 @@ description = "Unified LLM provider abstraction with LiteLLM integration, cost t
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "pygenai-core",
     "litellm>=1.52.0",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
@@ -25,27 +26,8 @@ optional-dependencies.dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/genai"]
+packages = ["src/pygenai/llm"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.ruff]
-line-length = 120
-target-version = "py313"
-
-[tool.ruff.lint]
-select = [
-    "E", "W", "F", "I", "N", "UP", "C4", "PIE", "RUF",
-    "A", "ANN", "ASYNC", "S", "B", "A", "ARG", "PTH", "RET",
-    "SLF", "PERF", "FURB", "LOG", "T201", "T203"
-]
-ignore = ["A003", "ARG002", "ANN101"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-asyncio_mode = "auto"
-
-[tool.pyrefly]
-strict = true

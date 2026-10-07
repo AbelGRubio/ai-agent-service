@@ -2,7 +2,7 @@
 
 import asyncio
 
-from pygenai import BufferMemory, Message, MessageRole, TokenCounter
+from pygenai.memory import BufferMemory, Message, MessageRole, TokenCounter
 
 
 async def main():

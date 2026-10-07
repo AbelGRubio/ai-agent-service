@@ -7,3 +7,4 @@ coverage*
 
 **/.logs
 .env
+*.egg-info/

@@ -23,7 +23,8 @@ from pygenai.rag.vectorstores.base import VectorStore
 class HybridRetriever(BaseRetriever):
     """Fuse vector similarity with a lightweight keyword scoring strategy."""
 
-    def __init__(self, vector_store: VectorStore, *, vector_weight: float = 0.7, keyword_weight: float = 0.3) -> None:
+    def __init__(self, vector_store: VectorStore, *, vector_weight: float = 0.7,
+                 keyword_weight: float = 0.3) -> None:
         """Initialize the hybrid ranking weights."""
         self.vector_store = vector_store
         self.vector_weight = vector_weight
@@ -58,7 +59,8 @@ class HybridRetriever(BaseRetriever):
             if key in candidates:
                 continue
             keyword_score = self._keyword_score(query, document)
-            candidates[key] = RetrievedDocument(document=document, score=self.keyword_weight * keyword_score, metadata={})
+            candidates[key] = RetrievedDocument(
+                document=document, score=self.keyword_weight * keyword_score, metadata={})
 
         ranked = sorted(candidates.values(), key=lambda result: result.score, reverse=True)[:top_k]
         for index, result in enumerate(ranked, start=1):

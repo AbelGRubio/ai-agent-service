@@ -1,31 +1,42 @@
 [project]
 name = "pygenai"
 version = "0.1.0"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
   "litellm==1.89.3",
   "langchain_community",
-  "langchain[openai]",
-  "openai",
-  "copilotkit",
+  "langchain>=0.1.0",
   "langgraph",
   "langgraph-api",
   "pydantic_settings",
-  "langchain-openai",
   "langchain-mcp-adapters",
   "langgraph-cli[inmem]",
   "langgraph-sdk>=0.4.2",
   "pyjwt>=2.13.0",
-  "langchain-google-genai>=4.4.0",
   "langchain-litellm>=0.7.1",
   "streamlit>=1.65.0",
+  "pygenai-memory",
+  "pygenai-llm",
+  "pygenai-rag",
+  "pygenai-core",
+]
+
+[project.optional-dependencies]
+llm = [
+    "pygenai-llm",
+]
+memory = [
+    "pygenai-memory",
+]
+rag = [
+    "pygenai-rag",
 ]
 
 [dependency-groups]
 dev = [
     "pre-commit==4.5.1",
     "pyrefly==0.47.0",
-    "pytest==9.0.2",
+    "pytest>=9.0.2",
     "pytest-asyncio==1.3.0",
     "pytest-cookies==0.7.0",
     "pytest-cov==7.0.0",
@@ -37,6 +48,20 @@ dev = [
     "pyright>=1.1.400",
     "build",
     "twine",
+]
+
+[tool.uv.sources]
+pygenai-core = { workspace = true }
+pygenai-llm = { workspace = true }
+pygenai-memory = { workspace = true }
+pygenai-rag = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+    "libs/core",
+    "libs/llm",
+    "libs/memory",
+    "libs/rag"
 ]
 
 [tool.pytest.ini_options]
@@ -124,14 +149,6 @@ section-order = [
 "**/__init__.py" = ["D104", "F401"]
 "tests/**" = ["S101", "D103", "D100", "D104", "SLF001", "B018"]
 
-[tool.ty.rules]
-
-[tool.ty.environment]
-python = "./.venv"
-python-version = "3.14"
-python-platform = "linux"
-root = ["."]
-extra-paths = []
 
 [tool.ty.src]
 respect-ignore-files = false
@@ -149,9 +166,7 @@ project-excludes = [
 ]
 search-path = [
     "src",
-    # ".venv/lib/python3.14/site-packages",
+    # ".venv/lib/python3.13/site-packages",
     ".venv/Lib/site-packages",
 ]
-python-platform = "win32"
-python-version = "3.14"
-python-interpreter-path = ".venv/Scripts/python.exe"
+

@@ -1,0 +1,16 @@
+[project]
+name = "pygenai-core"
+version = "0.1.0"
+description = "Core library for pygenai, providing foundational utilities and shared components for LLM, memory, and RAG modules."
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "litellm>=1.89.3",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pygenai/rag"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -3,8 +3,9 @@ name = "pygenai-rag"
 version = "0.1.0"
 description = "Vendored rag library for pygenai"
 readme = "README.md"
-requires-python = ">=3.12,<3.14"
+requires-python = ">=3.13,<3.14"
 dependencies = [
+    "pygenai-core",
     "boto3==1.43.95",
     "botocore==1.43.95",
     "langchain-core>=1.6.6",
@@ -15,7 +16,7 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pygenai"]
+packages = ["src/pygenai/rag"]
 
 [build-system]
 requires = ["hatchling"]

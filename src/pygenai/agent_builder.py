@@ -9,11 +9,11 @@ from langchain_mcp_adapters.sessions import Connection, StreamableHttpConnection
     WebsocketConnection
 from langgraph.graph import StateGraph, END
 from typing import Any, Callable, Dict, List, Optional, Union
-from typing_extensions import TypeAlias
-from typing_extensions import TypedDict
+from typing_extensions import TypeAlias, TypedDict
 
 from pygenai.settings import get_settings
 from pygenai.utils.mcp_manager import get_mcp_manager
+import litellm
 
 MCPConnection: TypeAlias = Union[
     StdioConnection,
@@ -99,6 +99,7 @@ class AgentBuilder:
 
         # 2. Gather and read RAG sources information if configured
         rag_texts = []
+
         for rag_name, rag_cfg in self._rag_sources.items():
             for file_path in rag_cfg.files:
                 try:

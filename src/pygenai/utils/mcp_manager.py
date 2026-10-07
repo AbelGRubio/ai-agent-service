@@ -26,7 +26,7 @@ from langchain_mcp_adapters.tools import load_mcp_tools
 from mcp import ClientSession
 from typing import Any
 
-from pygenai.logger import get_logger
+from libs.core.src.pygenai.core.logger import get_logger
 
 logger = get_logger(__name__)
 
