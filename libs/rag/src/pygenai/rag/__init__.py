@@ -20,7 +20,6 @@ from .chunking import (
     StructureChunker,
     TokenChunker,
 )
-from .data import Chunk, Document, SearchHit
 from .embeddings import BaseEmbeddings, SimpleEmbeddings, LiteLLMEmbeddings
 from .loaders import (
     CSVLoader,
@@ -52,11 +51,9 @@ __version__ = "0.1.0"
 __all__ = [
     "BaseEmbeddings",
     "CSVLoader",
-    "Chunk",
     "ChunkStrategy",
     "ChromaVectorStore",
     "CrossEncoderReranker",
-    "Document",
     "DocumentLoader",
     "FAISSVectorStore",
     "FileDocumentLoader",
@@ -70,7 +67,6 @@ __all__ = [
     "PDFLoader",
     "PineconeVectorStore",
     "QdrantVectorStore",
-    "SearchHit",
     "SemanticChunker",
     "SimpleEmbeddings",
     "StructureChunker",

@@ -86,20 +86,52 @@ class AgentBuilder:
     # --- Node 1: Prepara pregunta para RAG ---
     async def prepare_rag_query_node(self, state: AgentState) -> dict[str, Any]:
         """Extract the user's latest query and retrieve relevant context from RAG sources."""
+        if not self._rag_sources:
+            return {}
+
         messages = state.get("messages", [])
+        if not messages:
+            return {}
+
+        last_msg = messages[-1]
+        if isinstance(last_msg, HumanMessage):
+            rag_query = last_msg.content
+        elif isinstance(last_msg, dict):
+            rag_query = last_msg.get('content', str(last_msg))
+        else:
+            rag_query = getattr(last_msg, "content", str(last_msg))
+
         rag_texts = []
-        rag_query = ""
+
+        decision_prompt = (
+            "Analyze if the following user query requires external knowledge retrieval "
+            "from a document database to provide an accurate answer. "
+            f"Query: '{rag_query}'\n"
+            "Answer strictly with 'YES' and the reformulated query if it needs external documents, "
+            "or 'NO' if it can be answered "
+            "with general knowledge, casual conversation, or tool/code execution without documents."
+        )
 
         if messages:
             last_msg = messages[-1]
             if isinstance(last_msg, HumanMessage):
                 rag_query = last_msg.content
             else:
-                rag_query = getattr(last_msg, "content", str(last_msg))
+                rag_query = last_msg.get('content', str(last_msg))
+
+        try:
+            decision_response = await self._llm.ainvoke([HumanMessage(content=decision_prompt)])
+            decision_text = decision_response.content.strip().upper()
+
+            if "YES" not in decision_text:
+                return {}
+        except Exception:
+            pass
+
 
         for rag_name, rag_retriever in self._rag_sources.items():
             try:
-                retrieved_content = rag_retriever.retrieve(rag_query)
+                retrieved_content = rag_retriever.retrieve_and_format(rag_query)
                 rag_texts.append(f"--- Content from RAG {rag_name} [{retrieved_content}]")
             except Exception as e:
                 rag_texts.append(f"--- RAG [{rag_name}] error loading information: {e} ---")

@@ -22,18 +22,18 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import InMemoryVectorStore as LangChainInMemoryVectorStore
 
 from pygenai.core.data import Chunk, Document, SearchHit, from_langchain_document, to_langchain_document
-from pygenai.rag.embeddings import OpenAIEmbeddingsAdapter, SimpleEmbeddings
+from pygenai.rag.embeddings import SimpleEmbeddings, LiteLLMEmbeddings
 from pygenai.rag.vectorstores.base import VectorStore
 
 
 def create_openai_embeddings(
     *,
     api_key: str | None = None,
-    model: str = "text-embedding-3-small",
+    model: str = "gemini/gemini-embedding-2",
     base_url: str | None = None,
 ) -> Embeddings:
     """Create an OpenAI-backed embeddings client when the optional dependency is installed."""
-    return OpenAIEmbeddingsAdapter(api_key=api_key, model=model, base_url=base_url)
+    return LiteLLMEmbeddings(api_key=api_key, model=model, base_url=base_url)
 
 
 class InMemoryVectorStore(VectorStore):
@@ -44,7 +44,7 @@ class InMemoryVectorStore(VectorStore):
         embeddings: Embeddings | None = None,
         *,
         openai_api_key: str | None = None,
-        openai_model: str = "text-embedding-3-small",
+        openai_model: str = "gemini/gemini-embedding-2",
         openai_base_url: str | None = None,
     ) -> None:
         """Initialize the LangChain-backed in-memory store.
