@@ -1,0 +1,174 @@
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# LiteLLM Configuration - Router and Model Mapping
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# Global Configuration
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+global:
+  # Log level for LiteLLM
+  log_level: "INFO"
+  # Timeout for all API calls
+  timeout: 30
+  # Number of retries
+  num_retries: 3
+  # Enable fallback
+  fallback_enabled: true
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# Model Configurations
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+models:
+  # OpenAI Models
+  gpt-4o:
+    provider: "openai"
+    model_name: "gpt-4o"
+    api_base: "https://api.openai.com/v1"
+    timeout: 30
+    rpm_limit: 100
+    tpm_limit: 1000000
+
+  gpt-4o-mini:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    api_base: "https://api.openai.com/v1"
+    timeout: 30
+    rpm_limit: 500
+    tpm_limit: 2000000
+
+  # Anthropic Models
+  claude-3-5-sonnet:
+    provider: "anthropic"
+    model_name: "claude-3-5-sonnet-20241022"
+    timeout: 30
+    rpm_limit: 50
+    tpm_limit: 400000
+
+  claude-3-opus:
+    provider: "anthropic"
+    model_name: "claude-3-opus-20250219"
+    timeout: 30
+    rpm_limit: 40
+    tpm_limit: 200000
+
+  # Azure OpenAI Models
+  azure-gpt4:
+    provider: "azure"
+    model_name: "gpt-4"
+    api_base: "${AZURE_API_BASE}"
+    api_version: "2024-02-15-preview"
+    timeout: 30
+    rpm_limit: 100
+    tpm_limit: 1000000
+
+  # AWS Bedrock Models
+  bedrock-claude-sonnet:
+    provider: "bedrock"
+    model_name: "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+    region: "us-east-1"
+    timeout: 30
+    rpm_limit: 50
+    tpm_limit: 400000
+
+  # Ollama (Local) Models
+  ollama-llama3:
+    provider: "ollama"
+    model_name: "llama3"
+    api_base: "http://localhost:11434"
+    timeout: 120
+    rpm_limit: 1000
+    tpm_limit: 10000000
+
+  ollama-mistral:
+    provider: "ollama"
+    model_name: "mistral"
+    api_base: "http://localhost:11434"
+    timeout: 120
+    rpm_limit: 1000
+    tpm_limit: 10000000
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# Routing Strategies
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+routes:
+  # High-performance route (most reliable and capable)
+  high-performance:
+    - model: gpt-4o
+      weight: 1.0
+    - model: claude-3-5-sonnet
+      weight: 0.9
+      condition: "openai_failed"
+    - model: ollama-llama3
+      weight: 0.1
+      condition: "all_failed"
+
+  # Cost-optimized route
+  cost-optimized:
+    - model: gpt-4o-mini
+      weight: 1.0
+    - model: claude-3-opus
+      weight: 0.8
+      condition: "openai_failed"
+    - model: ollama-mistral
+      weight: 0.1
+      condition: "all_failed"
+
+  # Fallback-only route (uses only open-source/local)
+  local-only:
+    - model: ollama-llama3
+      weight: 0.7
+    - model: ollama-mistral
+      weight: 0.3
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# Retry Policy
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+retry_policy:
+  max_retries: 3
+  initial_delay: 1.0
+  max_delay: 60.0
+  exponential_base: 2.0
+  retry_on:
+    - 429  # Rate limit
+    - 500  # Internal server error
+    - 502  # Bad gateway
+    - 503  # Service unavailable
+    - 504  # Gateway timeout
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# Cost Tracking
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+cost_tracking:
+  enabled: true
+  log_file: "/var/logs/llm_costs.jsonl"
+  aggregate_interval: 3600  # seconds
+  audit_trail: true
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# Provider-specific Settings
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+providers:
+  openai:
+    base_url: "https://api.openai.com/v1"
+    request_timeout: 30
+    max_concurrent_requests: 10
+
+  anthropic:
+    base_url: "https://api.anthropic.com"
+    request_timeout: 30
+    max_concurrent_requests: 10
+
+  azure:
+    api_version: "2024-02-15-preview"
+    request_timeout: 30
+    max_concurrent_requests: 10
+
+  bedrock:
+    region: "us-east-1"
+    request_timeout: 30
+    max_concurrent_requests: 10
+
+  ollama:
+    base_url: "http://localhost:11434"
+    request_timeout: 120
+    max_concurrent_requests: 50

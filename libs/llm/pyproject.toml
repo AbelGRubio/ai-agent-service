@@ -1,0 +1,51 @@
+[project]
+name = "pygenai-llm"
+version = "0.1.0"
+description = "Unified LLM provider abstraction with LiteLLM integration, cost tracking, and fallback support"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "litellm>=1.52.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "openai>=1.57.0",
+    "anthropic>=0.39.0",
+    "azure-identity>=1.15.0",
+    "boto3>=1.43.95",
+    "requests>=2.32.0",
+    "tenacity>=9.1.4",
+]
+optional-dependencies.dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "ruff>=0.8.0",
+    "pyrefly>=0.1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/genai"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "UP", "C4", "PIE", "RUF",
+    "A", "ANN", "ASYNC", "S", "B", "A", "ARG", "PTH", "RET",
+    "SLF", "PERF", "FURB", "LOG", "T201", "T203"
+]
+ignore = ["A003", "ARG002", "ANN101"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.pyrefly]
+strict = true

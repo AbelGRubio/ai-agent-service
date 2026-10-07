@@ -1,25 +1,25 @@
 [project]
-name = "agent"
+name = "pygenai"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
-  "observe-core",
   "litellm==1.89.3",
   "langchain_community",
   "langchain[openai]",
   "openai",
   "copilotkit",
   "langgraph",
+  "langgraph-api",
   "pydantic_settings",
   "langchain-openai",
   "langchain-mcp-adapters",
   "langgraph-cli[inmem]",
   "langgraph-sdk>=0.4.2",
   "pyjwt>=2.13.0",
+  "langchain-google-genai>=4.4.0",
+  "langchain-litellm>=0.7.1",
+  "streamlit>=1.65.0",
 ]
-
-[tool.uv.sources]
-observe-core = { path = "../../libs/observe_core", editable = false }
 
 [dependency-groups]
 dev = [
@@ -109,7 +109,7 @@ ignore = ["ANN401"]
 convention = "google"
 
 [tool.ruff.lint.isort]
-known-first-party = ["observe_agent"]
+known-first-party = ["pygenai"]
 section-order = [
     "future",
     "standard-library",
@@ -155,4 +155,3 @@ search-path = [
 python-platform = "win32"
 python-version = "3.14"
 python-interpreter-path = ".venv/Scripts/python.exe"
-

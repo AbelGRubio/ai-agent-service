@@ -1,0 +1,67 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace # elimina espacios finales
+      - id: end-of-file-fixer # asegura línea final
+      - id: check-added-large-files # evita commits de archivos muy grandes
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-toml
+      - id: check-yaml
+        exclude: ^helm_config/.*
+      - id: check-json
+        exclude: ^(.vscode/settings.json|helm_config/.*)
+      - id: pretty-format-json
+        exclude: ^(.vscode/settings.json|helm_config/.*)
+        args: [--autofix, --no-sort-keys]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=2000"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.11
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+
+  # - repo: https://github.com/facebook/pyrefly-pre-commit
+  #   rev: 0.47.0
+  #   hooks:
+  #     - id: pyrefly-check
+  #       name: Pyrefly (type checking)
+  #       pass_filenames: false
+  #       language: system
+  #       files: ^apps/agent/
+
+  - repo: https://github.com/checkmake/checkmake.git
+    rev: v0.3.0
+    hooks:
+      - id: checkmake
+        args: ["--config=.checkmake.ini"]
+
+  # 3. Pyrefly: Un hook específico por proyecto
+  - repo: local
+    hooks:
+      - id: pyrefly-agent
+        name: Pyrefly (Agent)
+        entry: pyrefly check --config apps/agent/pyproject.toml
+        language: system
+        pass_filenames: false
+        files: ^apps/agent/
+
+      - id: pyrefly-mcp
+        name: Pyrefly (MCP)
+        entry: pyrefly check --config apps/mcp/pyproject.toml
+        language: system
+        pass_filenames: false
+        files: ^apps/mcp/
+
+      - id: pyrefly-api
+        name: Pyrefly (API)
+        entry: pyrefly check --config apps/api/pyproject.toml
+        language: system
+        pass_filenames: false
+        files: ^apps/api/

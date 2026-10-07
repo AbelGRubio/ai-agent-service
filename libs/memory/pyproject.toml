@@ -1,0 +1,82 @@
+
+[project]
+name = "pygenai-memory"
+version = "0.1.0"
+description = "Robust and extensible memory module for AI agents with support for short-term, long-term, and semantic memory."
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "MIT"}
+authors = [{name = "Pygenai Team"}]
+keywords = ["memory", "ai-agents", "conversation", "persistence"]
+
+dependencies = [
+    "pydantic>=2.0",
+    "python-dotenv>=1.0",
+    "redis>=5.0",
+    "psycopg[binary]>=3.0",
+    "elasticsearch>=8.0",
+    "tiktoken>=0.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
+    "ruff>=0.1",
+    "pyrefly>=0.1",
+    "black>=23.0",
+    "mypy>=1.0",
+]
+
+[tool.uv.sources]
+pygenai-mcp = { path = "../../src", editable = true }
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "B", "C", "UP", "RUF", "SIM", "PIE", "T20",
+    "Q", "RET", "SLF", "PERF", "PL", "FURB", "LOG", "D",
+]
+ignore = [
+    "D100", "D104", "D105", "D203", "D212", "D401", "D404", "D406",
+    "D407", "D408", "D409", "D413",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "T201", "SLF001"]
+"__init__.py" = ["F401"]
+
+[tool.pyrefly]
+include = ["src"]
+exclude = ["tests", "venv"]
+max-complexity = 10
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=src/pygenai_memory --cov-report=term --cov-report=html"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+source = ["src/pygenai_memory"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
