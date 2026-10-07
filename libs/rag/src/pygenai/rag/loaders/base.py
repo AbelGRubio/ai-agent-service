@@ -19,7 +19,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from pygenai.rag.data import Document
+from pygenai.core.data import Document
 
 
 class DocumentLoader(ABC):

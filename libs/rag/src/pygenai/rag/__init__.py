@@ -21,7 +21,7 @@ from .chunking import (
     TokenChunker,
 )
 from .data import Chunk, Document, SearchHit
-from .embeddings import BaseEmbeddings, OpenAIEmbeddingsAdapter, SimpleEmbeddings
+from .embeddings import BaseEmbeddings, SimpleEmbeddings, LiteLLMEmbeddings
 from .loaders import (
     CSVLoader,
     DocumentLoader,
@@ -33,11 +33,9 @@ from .loaders import (
     WebLoader,
 )
 from .retrievers import (
-    BaseRetriever,
     CrossEncoderReranker,
     HybridRetriever,
     NoOpReranker,
-    RetrievedDocument,
     VectorRetriever,
 )
 from .vectorstores import (
@@ -53,7 +51,6 @@ __version__ = "0.1.0"
 
 __all__ = [
     "BaseEmbeddings",
-    "BaseRetriever",
     "CSVLoader",
     "Chunk",
     "ChunkStrategy",
@@ -69,11 +66,10 @@ __all__ = [
     "MarkdownLoader",
     "MultiFormatLoader",
     "NoOpReranker",
-    "OpenAIEmbeddingsAdapter",
+    "LiteLLMEmbeddings",
     "PDFLoader",
     "PineconeVectorStore",
     "QdrantVectorStore",
-    "RetrievedDocument",
     "SearchHit",
     "SemanticChunker",
     "SimpleEmbeddings",

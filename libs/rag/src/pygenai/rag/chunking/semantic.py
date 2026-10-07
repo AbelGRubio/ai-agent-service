@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass
 
 from pygenai.rag.chunking.base import ChunkStrategy
-from pygenai.rag.data import Chunk, Document
+from pygenai.core.data import Chunk, Document
 
 
 @dataclass(slots=True)

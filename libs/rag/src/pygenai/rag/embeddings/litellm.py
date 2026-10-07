@@ -16,16 +16,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-try:
-    from langchain_community.embeddings import LiteLLMEmbeddings
-except ImportError as exc:  # pragma: no cover - optional dependency
-    msg = "langchain-community and litellm are required to use LiteLLM embeddings."
-    raise ImportError(msg) from exc
-
 from .base import BaseEmbeddings
 
 
-class LiteLLMEmbeddingsAdapter(BaseEmbeddings, LiteLLMEmbeddings):
+class LiteLLMEmbeddings(BaseEmbeddings):
     """Thin wrapper over LangChain's LiteLLM embeddings implementation."""
 
     def __init__(

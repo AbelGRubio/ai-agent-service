@@ -1,16 +1,16 @@
 [project]
 name = "pygenai"
 version = "0.1.0"
-requires-python = ">=3.13,<3.14"
+requires-python = ">=3.12,<3.14"
 dependencies = [
   "litellm==1.89.3",
-  "langchain_community",
+  "langchain-community",
   "langchain>=0.1.0",
   "langgraph",
   "langgraph-api",
   "pydantic_settings",
   "langchain-mcp-adapters",
-  "langgraph-cli[inmem]",
+  "langgraph-cli",
   "langgraph-sdk>=0.4.2",
   "pyjwt>=2.13.0",
   "langchain-litellm>=0.7.1",

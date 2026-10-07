@@ -3,7 +3,7 @@ name = "pygenai-memory"
 version = "0.1.0"
 description = "Robust and extensible memory module for AI agents with support for short-term, long-term, and semantic memory."
 readme = "README.md"
-requires-python = ">=3.13,<3.14"
+requires-python = ">=3.12,<3.14"
 license = {text = "MIT"}
 authors = [{name = "Pygenai Team"}]
 keywords = ["memory", "ai-agents", "conversation", "persistence"]

@@ -3,7 +3,7 @@ name = "pygenai-llm"
 version = "0.1.0"
 description = "Unified LLM provider abstraction with LiteLLM integration, cost tracking, and fallback support"
 readme = "README.md"
-requires-python = ">=3.13,<3.14"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "pygenai-core",
     "litellm>=1.52.0",

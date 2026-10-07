@@ -21,7 +21,7 @@ from typing import Any
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import InMemoryVectorStore as LangChainInMemoryVectorStore
 
-from pygenai.rag.data import Chunk, Document, SearchHit, from_langchain_document, to_langchain_document
+from pygenai.core.data import Chunk, Document, SearchHit, from_langchain_document, to_langchain_document
 from pygenai.rag.embeddings import OpenAIEmbeddingsAdapter, SimpleEmbeddings
 from pygenai.rag.vectorstores.base import VectorStore
 

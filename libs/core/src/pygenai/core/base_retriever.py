@@ -16,7 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-from pygenai.rag.data import Chunk, Document
+from pygenai.core.data import Chunk, Document
 
 
 @dataclass(slots=True)

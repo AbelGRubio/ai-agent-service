@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from pygenai.rag.data import Chunk, Document
+from pygenai.core.data import Chunk, Document
 from pygenai.rag.retrievers.base import BaseRetriever, RetrievedDocument
 from pygenai.rag.vectorstores.base import VectorStore
 
