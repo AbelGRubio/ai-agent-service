@@ -1,19 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, Optional, Union
+
 from langchain.agents import create_agent
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_litellm import ChatLiteLLM
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_mcp_adapters.sessions import Connection, StreamableHttpConnection, StdioConnection, SSEConnection, \
+from langchain_mcp_adapters.sessions import StreamableHttpConnection, StdioConnection, SSEConnection, \
     WebsocketConnection
 from langgraph.graph import StateGraph, END
-from typing import Any, Callable, Dict, List, Optional, Union
 from typing_extensions import TypeAlias, TypedDict
 
+from pygenai.core.base_memory import MemoryTypes
+from pygenai.core.base_retriever import BaseRetriever
 from pygenai.settings import get_settings
 from pygenai.utils.mcp_manager import get_mcp_manager
-import litellm
 
 MCPConnection: TypeAlias = Union[
     StdioConnection,
@@ -34,15 +36,6 @@ class LLMConfig:
     retry_config: Dict[str, Any] = field(default_factory=lambda: {"max_retries": 2})
 
 
-@dataclass
-class RAGConfig:
-    """Configuration class for RAG (Retrieval-Augmented Generation) sources."""
-    files: List[str]
-    llm: Optional[LLMConfig] = None
-    chunk_size: int = 1000
-    chunk_overlap: int = 200
-
-
 class AgentState(TypedDict):
     """Defines the state structure for the LangGraph agent."""
     messages: list[BaseMessage]
@@ -58,8 +51,8 @@ class AgentBuilder:
     def __init__(self) -> None:
         """Initialize the AgentBuilder with empty configurations."""
         # self._llm_config: Optional[LLMConfig] = None
-        self._rag_sources: Dict[str, RAGConfig] = {}
-        self._memory: Optional[Any] = None
+        self._rag_sources: Dict[str, BaseRetriever] = {}
+        self._memory: Optional[MemoryTypes] = None
         self._skills: list[Any] = []
         self._mcps: list[MCPConnection] = []
         self._custom_reasoning_flow: Optional[Callable[[AgentState, Dict[str, Any]], dict[str, Any]]] = None
@@ -87,7 +80,7 @@ class AgentBuilder:
 
     # Default reasoning node incorporating memory, RAG, skills, and MCPs
     async def default_reasoning_node(self, state: AgentState) -> dict[str, Any]:
-        """Execute the core reasoning step using LangChain's create_agent, integrating RAGs, skills, MCPs, and memory."""
+        """Execute the core reasoning step integrating RAGs, skills, MCPs, and memory."""
         messages = list(state["messages"])
         current_context = state.get("context", {})
 
@@ -99,14 +92,12 @@ class AgentBuilder:
 
         # 2. Gather and read RAG sources information if configured
         rag_texts = []
-
-        for rag_name, rag_cfg in self._rag_sources.items():
-            for file_path in rag_cfg.files:
-                try:
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        rag_texts.append(f"--- Content from RAG [{rag_name} : {file_path}] ---\n{f.read()}")
-                except Exception as e:
-                    rag_texts.append(f"--- RAG [{rag_name}] error loading file {file_path}: {e} ---")
+        rag_query = ''
+        for rag_name, rag_retriever in self._rag_sources:
+            try:
+                rag_texts.append(f"--- Content from RAG {rag_name} [{rag_retriever.retrieve(rag_query)}]")
+            except Exception as e:
+                rag_texts.append(f"--- RAG [{rag_name}] error loading information: {e} ---")
 
         # 3. Construct system prompt including RAG knowledge if available
         system_prompt = f"You are an autonomous AI assistant."
@@ -167,20 +158,20 @@ class AgentBuilder:
         )
         return self
 
-    def add_rag_source(self, name: str, config: RAGConfig) -> AgentBuilder:
+    def add_rag_source(self, name: str, retriever: BaseRetriever) -> AgentBuilder:
         """Add a RAG source to the agent's knowledge retrieval ecosystem.
 
         Args:
             name: Unique identifier for the RAG source.
-            config: RAG configuration instance.
+            retriever: RAG retriever instance.
 
         Returns:
             AgentBuilder: Self instance for method chaining.
         """
-        self._rag_sources[name] = config
+        self._rag_sources[name] = retriever
         return self
 
-    def add_memory(self, memory: Any) -> AgentBuilder:
+    def add_memory(self, memory: MemoryTypes) -> AgentBuilder:
         """Add a memory backend to the agent.
 
         Args:
@@ -204,7 +195,7 @@ class AgentBuilder:
         self._skills.append(skill)
         return self
 
-    def add_mcp(self, mcp: Connection) -> AgentBuilder:
+    def add_mcp(self, mcp: MCPConnection) -> AgentBuilder:
         """Add a Model Context Protocol (MCP) server or client.
 
         Args:
@@ -239,8 +230,6 @@ class AgentBuilder:
         Raises:
             ValueError: If mandatory configurations (such as primary LLM) are missing.
         """
-        # if not self._llm_config:
-        #     raise ValueError("Primary LLM configuration is required to build the agent.")
 
         # Initialize the LangGraph StateGraph
         workflow = StateGraph(AgentState)

@@ -2379,27 +2379,16 @@ dev = [
 name = "pygenai-core"
 version = "0.1.0"
 source = { editable = "libs/core" }
-
-[package.optional-dependencies]
-dev = [
-    { name = "pyrefly" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
-    { name = "ruff" },
+dependencies = [
+    { name = "langchain-core" },
+    { name = "litellm" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "pyrefly", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.1.1" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.25.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=6.0.0" },
-    { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.14.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
+    { name = "langchain-core", specifier = ">=1.6.6" },
+    { name = "litellm", specifier = ">=1.89.3" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "pygenai-llm"

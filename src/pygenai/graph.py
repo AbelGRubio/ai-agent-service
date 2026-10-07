@@ -1,7 +1,7 @@
 """Main entry point for the CopilotKit agent graph."""
 
 from pygenai.agent_builder import AgentBuilder
-from libs.core.src.pygenai.core.logger import get_logger
+from pygenai.core.logger import get_logger
 from pygenai.settings import get_settings
 
 logger = get_logger(__name__)

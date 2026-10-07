@@ -31,6 +31,9 @@ memory = [
 rag = [
     "pygenai-rag",
 ]
+core = [
+    "pygenai-core",
+]
 
 [dependency-groups]
 dev = [

@@ -2,8 +2,8 @@
 
 from elasticsearch import Elasticsearch
 
-from .base import SemanticSearchAdapter
-from .models import Message
+from pygenai.core.base import SemanticSearchAdapter
+from pygenai.core.models import Message
 
 
 class ElasticsearchMemory(SemanticSearchAdapter):

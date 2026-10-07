@@ -1,6 +1,7 @@
 """Base interfaces for memory and persistence layers."""
 
 from abc import ABC, abstractmethod
+from typing import TypeAlias, Union
 
 from .models import ConversationState, Message, SummaryRecord
 
@@ -168,3 +169,10 @@ class SemanticSearchAdapter(ABC):
         Args:
             session_id: The session identifier.
         """
+
+
+MemoryTypes: TypeAlias = Union[
+    MemoryStore,
+    PersistenceAdapter,
+    SemanticSearchAdapter,
+]

@@ -5,8 +5,8 @@ import json
 import psycopg
 import redis
 
-from .base import PersistenceAdapter
-from .models import ConversationState
+from pygenai.core.base_memory import PersistenceAdapter
+from pygenai.core.models import ConversationState
 
 
 class InMemoryAdapter(PersistenceAdapter):

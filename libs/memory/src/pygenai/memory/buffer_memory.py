@@ -1,7 +1,7 @@
 """BufferMemory: stores complete conversation history sequentially."""
 
-from .base import MemoryStore
-from .models import ConversationState, Message
+from pygenai.core.base import MemoryStore
+from pygenai.core.models import ConversationState, Message
 
 
 class BufferMemory(MemoryStore):

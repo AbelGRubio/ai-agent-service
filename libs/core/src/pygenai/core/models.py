@@ -8,6 +8,8 @@ from enum import StrEnum
 from typing import Any
 from uuid import uuid4
 
+from langchain_core.messages import BaseMessage
+
 
 class MessageRole(StrEnum):
     """Role of the message sender."""
@@ -17,8 +19,7 @@ class MessageRole(StrEnum):
     SYSTEM = "system"
 
 
-@dataclass
-class Message:
+class Message(BaseMessage):
     """
     Represents a single message in a conversation.
 
@@ -31,37 +32,10 @@ class Message:
         timestamp: When the message was created.
     """
 
-    role: MessageRole
-    content: str
-    id: str = field(default_factory=lambda: str(uuid4()))
     tokens: int = 0
     metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert message to dictionary."""
-        return {
-            "id": self.id,
-            "role": self.role.value,
-            "content": self.content,
-            "tokens": self.tokens,
-            "metadata": self.metadata,
-            "timestamp": self.timestamp.isoformat(),
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Message:
-        """Create message from dictionary."""
-        return cls(
-            id=data.get("id", str(uuid4())),
-            role=MessageRole(data["role"]),
-            content=data["content"],
-            tokens=data.get("tokens", 0),
-            metadata=data.get("metadata", {}),
-            timestamp=datetime.fromisoformat(data["timestamp"])
-            if isinstance(data.get("timestamp"), str)
-            else data.get("timestamp", datetime.utcnow()),
-        )
 
 
 @dataclass
@@ -130,23 +104,70 @@ class ConversationState:
     total_tokens: int = 0
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert state to dictionary."""
-        return {
-            "session_id": self.session_id,
-            "messages": [m.to_dict() for m in self.messages],
-            "summaries": [s.to_dict() for s in self.summaries],
-            "total_tokens": self.total_tokens,
-            "metadata": self.metadata,
-        }
 
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> ConversationState:
-        """Create state from dictionary."""
-        return cls(
-            session_id=data["session_id"],
-            messages=[Message.from_dict(m) for m in data.get("messages", [])],
-            summaries=[SummaryRecord.from_dict(s) for s in data.get("summaries", [])],
-            total_tokens=data.get("total_tokens", 0),
-            metadata=data.get("metadata", {}),
+
+@dataclass(slots=True)
+class Document:
+    """Canonical text unit stored in a RAG pipeline.
+
+    This model is intentionally lightweight so it can be used by both raw file
+    loaders and chunked retrieval systems without forcing a database-specific
+    schema.
+    """
+
+    id: str
+    text: str
+    metadata: dict[str, Any] = field(default_factory=dict)
+    source: str | None = None
+
+    def as_chunk(self, *, index: int = 0, start: int = 0, end: int | None = None) -> "Chunk":
+        """Convert the document into a chunk with the same content.
+
+        Args:
+            index: Sequential chunk index.
+            start: Character offset within the original source text.
+            end: Optional end offset within the original source text.
+
+        Returns:
+            Chunk: A chunk representation derived from this document.
+        """
+        return Chunk(
+            id=f"{self.id}-chunk-{index}",
+            text=self.text,
+            metadata={**self.metadata, "source": self.source},
+            document_id=self.id,
+            chunk_index=index,
+            start=start,
+            end=end,
         )
+
+
+@dataclass(slots=True)
+class Chunk:
+    """A chunk derived from a document after segmentation."""
+
+    id: str
+    text: str
+    metadata: dict[str, Any] = field(default_factory=dict)
+    document_id: str | None = None
+    chunk_index: int = 0
+    start: int = 0
+    end: int | None = None
+
+    def as_document(self) -> Document:
+        """Return a document-shaped copy of the chunk."""
+        return Document(
+            id=self.document_id or self.id,
+            text=self.text,
+            metadata={**self.metadata},
+            source=self.metadata.get("source"),
+        )
+
+
+@dataclass(slots=True)
+class SearchHit:
+    """A retrieval result with a minimal score value."""
+
+    document: Document | Chunk
+    score: float
+    metadata: dict[str, Any] = field(default_factory=dict)

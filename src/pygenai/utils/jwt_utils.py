@@ -13,7 +13,7 @@ Copyright ©2026. All rights reserved.
 
 import httpx2
 
-from libs.core.src.pygenai.core.logger import get_logger
+from pygenai.core.logger import get_logger
 from pygenai.settings import get_settings
 
 logger = get_logger(__name__)
