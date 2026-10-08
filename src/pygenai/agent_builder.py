@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from langchain.agents import create_agent
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
@@ -70,7 +70,7 @@ class AgentBuilder:
         settings = get_settings()
 
         self._llm = ChatLiteLLM(
-            model="gemini/gemini-3.6-flash",
+            model="openai/gpt-4o-mini",
             temperature=0.7,
             api_key=settings.llm_api_key.get_secret_value(),
             api_base=settings.model_base_url
@@ -112,13 +112,6 @@ class AgentBuilder:
             "with general knowledge, casual conversation, or tool/code execution without documents."
         )
 
-        if messages:
-            last_msg = messages[-1]
-            if isinstance(last_msg, HumanMessage):
-                rag_query = last_msg.content
-            else:
-                rag_query = last_msg.get('content', str(last_msg))
-
         try:
             decision_response = await self._llm.ainvoke([HumanMessage(content=decision_prompt)])
             decision_text = decision_response.content.strip().upper()
@@ -128,10 +121,9 @@ class AgentBuilder:
         except Exception:
             pass
 
-
         for rag_name, rag_retriever in self._rag_sources.items():
             try:
-                retrieved_content = rag_retriever.retrieve_and_format(rag_query)
+                retrieved_content = rag_retriever.retrieve_and_format(decision_text)
                 rag_texts.append(f"--- Content from RAG {rag_name} [{retrieved_content}]")
             except Exception as e:
                 rag_texts.append(f"--- RAG [{rag_name}] error loading information: {e} ---")
