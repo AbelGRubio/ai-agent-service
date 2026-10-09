@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from pygenai.rag import FixedSizeChunker, HybridRetriever, InMemoryVectorStore, TextLoader
-from pygenai.rag.data import Document
+from pygenai.core.data import Document
 
 
 def test_text_loader_creates_document(tmp_path: Path) -> None:

@@ -19,6 +19,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from .models import Message
+
 
 class LLMResponse(BaseModel):
     """Unified response model from any LLM provider."""
@@ -47,18 +49,6 @@ class MessageUsage(BaseModel):
         super().__init__(**data)
         if self.total_tokens == 0:
             self.total_tokens = self.prompt_tokens + self.completion_tokens
-
-
-class Message(BaseModel):
-    """Unified message format for all providers."""
-
-    role: str = Field(..., description="Message role: 'system', 'user', or 'assistant'")
-    content: str = Field(..., description="Message content")
-
-    class Config:
-        """Pydantic config."""
-
-        arbitrary_types_allowed = True
 
 
 @dataclass

@@ -2,7 +2,7 @@
 
 import asyncio
 
-from pygenai import Message, MessageRole, WindowMemory
+from pygenai.memory import Message, MessageRole, WindowMemory
 
 
 async def main():

@@ -16,9 +16,8 @@ from typing import Any
 
 import litellm
 
-from pygenai.llm.base import LLMProvider, LLMResponse, Message, MessageUsage, ProviderConfig
+from pygenai.core.base_llm import LLMProvider, LLMResponse, Message, MessageUsage, ProviderConfig
 from pygenai.llm.exceptions import AuthenticationError, ConfigurationError, InvalidResponseError, ProviderError
-
 
 class LiteLLMProvider(LLMProvider):
     """Unified LLM provider implementation using LiteLLM."""

@@ -8,13 +8,14 @@ Prometheus metrics instrumentation.
 import json
 import os
 import sys
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
 from functools import lru_cache
+
 # from observe_core import SessionMiddleware
 # from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.applications import Starlette
 
-from pygenai.logger import get_logger
+from pygenai.core.logger import get_logger
 
 sys.path.insert(0, os.path.abspath("src"))
 from langgraph_api.server import app as langgraph_app
@@ -38,7 +39,7 @@ def load_config() -> dict:
 
         logger.info(f"Graph file loaded: {graphs}")
     except FileNotFoundError as e:
-        logger.error(f"No se pudo cargar el archivo langgraph.json en la raíz: {e}")
+        logger.error(f"Cannot load langgraph.json in the root: {e}")
     return graphs
 
 
@@ -60,13 +61,13 @@ def define_app(add_auth: bool = False) -> Starlette:
     # if add_auth:
     #     langgraph_app.add_middleware(AuthMiddleware)
 
-    langgraph_app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    # langgraph_app.add_middleware(
+    #     CORSMiddleware,
+    #     allow_origins=["*"],
+    #     allow_credentials=True,
+    #     allow_methods=["*"],
+    #     allow_headers=["*"],
+    # )
 
     # Instrumentator().instrument(langgraph_app).expose(langgraph_app)
 

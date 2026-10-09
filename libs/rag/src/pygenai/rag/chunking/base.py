@@ -16,7 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
-from pygenai.rag.data import Chunk, Document
+from pygenai.core.data import Chunk, Document
 
 
 class ChunkStrategy(ABC):

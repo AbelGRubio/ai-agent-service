@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pygenai.rag.data import Document
+from pygenai.core.data import Document
 from pygenai.rag.retrievers import CrossEncoderReranker, HybridRetriever, NoOpReranker, VectorRetriever
 from pygenai.rag.vectorstores import InMemoryVectorStore
 

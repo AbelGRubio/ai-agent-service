@@ -2,8 +2,8 @@
 
 from collections.abc import Callable
 
-from .base import MemoryStore
-from .models import ConversationState, Message, MessageRole, SummaryRecord
+from pygenai.core.base_memory import MemoryStore
+from pygenai.core.models import ConversationState, Message, MessageRole, SummaryRecord
 
 MIN_MESSAGES_TO_COMPRESS = 3
 

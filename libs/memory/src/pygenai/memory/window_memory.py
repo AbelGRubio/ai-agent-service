@@ -1,7 +1,7 @@
 """WindowMemory: limits conversation history to a context window."""
 
-from .base import MemoryStore
-from .models import ConversationState, Message
+from pygenai.core.base_memory import MemoryStore
+from pygenai.core.models import ConversationState, Message
 
 
 class WindowMemory(MemoryStore):

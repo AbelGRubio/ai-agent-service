@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, Union
+import uuid
+
 from langchain.agents import create_agent
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.runnables import RunnableConfig
 from langchain_litellm import ChatLiteLLM
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_mcp_adapters.sessions import Connection, StreamableHttpConnection, StdioConnection, SSEConnection, \
+from langchain_mcp_adapters.sessions import StreamableHttpConnection, StdioConnection, SSEConnection, \
     WebsocketConnection
 from langgraph.graph import StateGraph, END
-from typing import Any, Callable, Dict, List, Optional, Union
-from typing_extensions import TypeAlias
-from typing_extensions import TypedDict
+from langgraph.graph.state import CompiledStateGraph
+from typing_extensions import TypeAlias, TypedDict
 
+from pygenai.core.base_memory import MemoryTypes
+from pygenai.core.base_retriever import BaseRetriever
 from pygenai.settings import get_settings
 from pygenai.utils.mcp_manager import get_mcp_manager
 
@@ -21,6 +26,27 @@ MCPConnection: TypeAlias = Union[
     StreamableHttpConnection,
     WebsocketConnection
 ]
+from langchain_core.messages.tool import ToolMessage
+
+
+def clean_messages_history(messages: list) -> list:
+    cleaned = []
+    for msg in messages:
+        # 1. Omitir ToolMessages por completo
+        if isinstance(msg, ToolMessage):
+            continue
+
+        # 2. Omitir AIMessages que sean exclusivamente de llamadas a herramientas (content vacío o sin texto útil)
+        if isinstance(msg, AIMessage):
+            is_tool_call_only = (
+                                        not msg.content or (isinstance(msg.content, str) and not msg.content.strip())
+                                ) and getattr(msg, "tool_calls", None)
+
+            if is_tool_call_only:
+                continue
+
+        cleaned.append(msg)
+    return cleaned
 
 
 @dataclass
@@ -34,35 +60,30 @@ class LLMConfig:
     retry_config: Dict[str, Any] = field(default_factory=lambda: {"max_retries": 2})
 
 
-@dataclass
-class RAGConfig:
-    """Configuration class for RAG (Retrieval-Augmented Generation) sources."""
-    files: List[str]
-    llm: Optional[LLMConfig] = None
-    chunk_size: int = 1000
-    chunk_overlap: int = 200
-
-
 class AgentState(TypedDict):
-    """Defines the state structure for the LangGraph agent."""
+    """Defines the expanded state structure for the LangGraph agent across modular nodes."""
     messages: list[BaseMessage]
     context: dict[str, Any]
-
+    rag_query: Optional[str]
+    rag_texts: list[str]
+    tools: list[Any]
+    memory_data: dict[str, Any]
+    session_id: Optional[str]
 
 class AgentBuilder:
     """Builder class for constructing LangGraph agents following SOLID principles.
 
-    Allows fluent configuration of LLMs, RAG sources, memory systems, MCPs, and skills.
+    Allows fluent configuration of LLMs, RAG sources, memory systems, MCPs, and skills,
+    utilizing a decoupled multi-node architecture for faster reasoning workflows.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, state_schema: Any = AgentState) -> None:
         """Initialize the AgentBuilder with empty configurations."""
-        # self._llm_config: Optional[LLMConfig] = None
-        self._rag_sources: Dict[str, RAGConfig] = {}
-        self._memory: Optional[Any] = None
+        self._state_schema = state_schema
+        self._rag_sources: Dict[str, BaseRetriever] = {}
+        self._memory: Optional[MemoryTypes] = None
         self._skills: list[Any] = []
-        self._mcps: list[MCPConnection] = []
-        self._custom_reasoning_flow: Optional[Callable[[AgentState, Dict[str, Any]], dict[str, Any]]] = None
+        self._mcps: dict[str, MCPConnection] = {}
         self._mcp_client: Optional[MultiServerMCPClient] = None
         self._mcp_manager = get_mcp_manager()
         self._define_default_llm()
@@ -72,7 +93,7 @@ class AgentBuilder:
         settings = get_settings()
 
         self._llm = ChatLiteLLM(
-            model="gemini/gemini-3.6-flash",
+            model="openai/gpt-4o-mini",
             temperature=0.7,
             api_key=settings.llm_api_key.get_secret_value(),
             api_base=settings.model_base_url
@@ -82,82 +103,211 @@ class AgentBuilder:
         """Initialize the MultiServerMCPClient if MCP configurations are provided."""
         if self._mcps and not self._mcp_client:
             self._mcp_client = MultiServerMCPClient(self._mcps)  # type: ignore[arg-type]
+            self._mcp_manager.current_config_hash = self._mcp_manager._get_hash(self._mcps)
 
-        await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
+        # await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
 
-    # Default reasoning node incorporating memory, RAG, skills, and MCPs
-    async def default_reasoning_node(self, state: AgentState) -> dict[str, Any]:
-        """Execute the core reasoning step using LangChain's create_agent, integrating RAGs, skills, MCPs, and memory."""
-        messages = list(state["messages"])
+    # --- Node 1: Prepara pregunta para RAG ---
+    async def prepare_rag_query_node(self, state: AgentState, config: RunnableConfig) -> dict[str, Any]:
+        """Extract the user's latest query and retrieve relevant context from RAG sources."""
+        configurable = config.get("configurable", {})
+        session_id = configurable.get("thread_id")
+        if not session_id:
+            session_id = str(uuid.uuid1())
+        if not self._rag_sources:
+            return {'session_id': session_id}
+
+        messages: list[BaseMessage] = state.get("messages", [])
+        if not messages:
+            return {'session_id': session_id}
+
+        last_msg = messages[-1]
+        if isinstance(last_msg, HumanMessage):
+            rag_query = last_msg.content
+        elif isinstance(last_msg, dict):
+            rag_query = last_msg.get('content', str(last_msg))
+        else:
+            rag_query = getattr(last_msg, "content", str(last_msg))
+
+        rag_texts = []
+
+        decision_prompt = (
+            "Analyze if the following user query requires external knowledge retrieval "
+            "from a document database to provide an accurate answer.\n"
+            f"Original query: '{rag_query}'\n\n"
+            "Formatting instructions:\n"
+            "- If it requires external documents, respond strictly with 'YES: ' "
+            "         followed by the reformulated query optimized for search.\n"
+            "- If it does NOT require external documents, respond solely with the word 'NO'.\n"
+            "- Do not include explanations, greetings, or any additional text.\n\n"
+            "Example of expected format (if it requires documents):\n"
+            "YES: What are the refund policies for company XYZ?"
+        )
+
+        try:
+            decision_response = await self._llm.ainvoke([HumanMessage(content=decision_prompt)])
+            decision_text = decision_response.content.strip().upper()
+
+            if "YES" not in decision_text:
+                return {'session_id': session_id}
+        except Exception:
+            pass
+
+        _, question_ = decision_text.split("YES: ", 1)
+
+        for rag_name, rag_retriever in self._rag_sources.items():
+            try:
+                retrieved_content = rag_retriever.retrieve_and_format(question_)
+                rag_texts.append(f"--- Content from RAG {rag_name} [{retrieved_content}]")
+            except Exception as e:
+                rag_texts.append(f"--- RAG [{rag_name}] error loading information: {e} ---")
+
+        return {
+            "rag_query": question_,
+            "rag_texts": rag_texts,
+            "session_id": session_id
+        }
+
+    # --- Node 2: Prepara las tools de los MCPs y skills ---
+    async def prepare_tools_node(self, state: AgentState) -> dict[str, Any]:
+        """Collect local skills and fetch remote tools from active MCP servers."""
+        available_tools = list(self._skills)
+        mcp_error_warning = None
+
+        if self._mcps:
+            try:
+                await self._start_mcp_client()
+
+                mcp_tools = await self._mcp_manager.get_active_tools(
+                    self._mcps, self._mcp_client
+                )
+                available_tools.extend(mcp_tools)
+
+            except Exception as e:
+                mcp_error_warning = f"[Warning: Failed to load tools from MCP servers: {e}]"
+                # current_context["mcp_warning"] = mcp_error_warning
+
+        return {
+            "tools": [t.name for t in available_tools],
+        }
+
+    # --- Node 3: Consulta/actualiza Memory ---
+    async def memory_node(self, state: AgentState) -> dict[str, Any]:
+        """Load history or session variables from the configured memory system."""
         current_context = state.get("context", {})
 
-        # 1. Retrieve history or extra context from memory if available
-        if self._memory and hasattr(self._memory, "load_memory_variables"):
-            memory_data = self._memory.load_memory_variables({})
-            if memory_data:
-                current_context.update(memory_data)
+        if self._memory:
+            try:
+                session_id = state.get("session_id", "")
 
-        # 2. Gather and read RAG sources information if configured
-        rag_texts = []
-        for rag_name, rag_cfg in self._rag_sources.items():
-            for file_path in rag_cfg.files:
-                try:
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        rag_texts.append(f"--- Content from RAG [{rag_name} : {file_path}] ---\n{f.read()}")
-                except Exception as e:
-                    rag_texts.append(f"--- RAG [{rag_name}] error loading file {file_path}: {e} ---")
+                current_context = await self._memory.get_messages(session_id)
+            except Exception as e:
+                current_context["memory_error"] = str(e)
 
-        # 3. Construct system prompt including RAG knowledge if available
-        system_prompt = f"You are an autonomous AI assistant."
+        return {
+            "context": current_context,
+            "memory_data": current_context
+        }
+
+    # --- Node 4: Llama al nodo de razonar ---
+    async def reasoning_node(self, state: AgentState) -> dict[str, Any]:
+        """Execute the core reasoning agent using the prepared RAG texts, tools, and memory."""
+        messages = list(state.get("messages", []))
+        rag_texts = state.get("rag_texts", [])
+        tools = await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
+        current_context = state.get("context", {})
+        memory_data = state.get("memory_data", None)
+
+        # Construct system prompt with retrieved RAG knowledge
+        system_prompt = "You are an autonomous AI assistant."
         if rag_texts:
             system_prompt += "\n\nRetrieved Knowledge (RAG):\n" + "\n".join(rag_texts)
 
-        available_tools = list(self._skills)
+        if "mcp_warning" in current_context:
+            system_prompt += f"\n\n{current_context['mcp_warning']}"
 
-        # 5. Establish MultiServerMCPClient connection and load remote MCP tools if configured
-        if self._mcps:
-            await self._start_mcp_client()
-            try:
-                mcp_tools = await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
-                available_tools.extend(mcp_tools)
-            except Exception as e:
-                system_prompt += f"\n\n[Warning: Failed to load tools from MCP servers: {e}]"
+        if memory_data:
+            system_prompt += f"\n\nMemory Data:\n{memory_data}"
 
-        # 4. Instantiate the agent using create_agent
+        # Instantiate the agent using create_agent
         react_agent = create_agent(
             model=self._llm,
-            tools=available_tools,
+            tools=tools,
             system_prompt=system_prompt,
         )
 
-        # 5. Invoke the react agent asynchronously with the message history
+        # Invoke the react agent asynchronously with message history
         agent_response = await react_agent.ainvoke({"messages": messages})
         agent_messages = agent_response.get("messages", [])
 
         # Merge new responses with existing conversation messages
-        updated_messages = messages + [msg for msg in agent_messages if msg not in messages]
-
-        # 6. Save interaction to memory if supported
-        if self._memory and hasattr(self._memory, "save_context"):
-            if messages and updated_messages:
-                last_user_msg = messages[-1].content if isinstance(messages[-1], HumanMessage) else ""
-                last_ai_msg = updated_messages[-1].content if isinstance(updated_messages[-1], AIMessage) else ""
-                self._memory.save_context({"input": last_user_msg}, {"output": last_ai_msg})
-
+        updated_messages = current_context + [msg for msg in agent_messages if msg not in messages]
+        # clean_messages = clean_messages_history(updated_messages)
         return {
             "messages": updated_messages,
             "context": current_context
         }
 
+    # --- Node 5: Guarda la interacción en la memoria a largo plazo---
+    async def save_memory_node(self, state: Any) -> dict[str, Any]:
+        """Save the latest interaction (user input and assistant response) into memory."""
+        if self._memory:
+            session_id = state.get("session_id", "")
+            user_messages = state.get("messages", [])
+
+            await self._memory.update_messages(session_id, user_messages)
+
+            if len(user_messages) > 6:
+                existing_summary = ""
+                try:
+                    existing_summary = await self._memory.get_summary(session_id)
+                except Exception:
+                    pass
+
+                conversation_history = "\n".join(
+                    [
+                        f"{m.type}:{m.content}"
+                        for m in user_messages
+                    ]
+                )
+
+                summary_prompt = (
+                    "Act as a long-term memory system for an AI assistant.\n"
+                    "Your task is to update the existing summary by incorporating the new "
+                    "conversation history.\n\n"
+                )
+
+                if existing_summary:
+                    summary_prompt += f"Existing Summary:\n{existing_summary}\n\n"
+                else:
+                    summary_prompt += "Existing Summary: None (this is the first summary).\n\n"
+
+                summary_prompt += (
+                    f"New Conversation History:\n{conversation_history}\n\n"
+                    "Instructions:\n"
+                    "- Integrate the new information from the conversation into the "
+                    "existing summary.\n"
+                    "- Keep the updated summary concise, preserving key points, user"
+                    " preferences, and important details.\n"
+                    "- Return strictly the text of the updated summary, with no greetings or"
+                    " additional explanations."
+                )
+
+                try:
+                    summary_response = await self._llm.ainvoke(
+                        [HumanMessage(content=summary_prompt)]
+                    )
+                    updated_summary = summary_response.content.strip()
+
+                    if updated_summary:
+                        await self._memory.add_summary(session_id, updated_summary)
+                except Exception:
+                    pass
+
+        return {}
+
     def with_llm(self, config: LLMConfig) -> AgentBuilder:
-        """Configure the primary LLM for the agent.
-
-        Args:
-            config: LLM configuration instance.
-
-        Returns:
-            AgentBuilder: Self instance for method chaining.
-        """
+        """Configure the primary LLM for the agent."""
         self._llm = ChatLiteLLM(
             model=config.model_name,
             temperature=config.temperature,
@@ -166,105 +316,48 @@ class AgentBuilder:
         )
         return self
 
-    def add_rag_source(self, name: str, config: RAGConfig) -> AgentBuilder:
-        """Add a RAG source to the agent's knowledge retrieval ecosystem.
-
-        Args:
-            name: Unique identifier for the RAG source.
-            config: RAG configuration instance.
-
-        Returns:
-            AgentBuilder: Self instance for method chaining.
-        """
-        self._rag_sources[name] = config
+    def add_rag_source(self, name: str, retriever: BaseRetriever) -> AgentBuilder:
+        """Add a RAG source to the agent's knowledge retrieval ecosystem."""
+        self._rag_sources[name] = retriever
         return self
 
-    def add_memory(self, memory: Any) -> AgentBuilder:
-        """Add a memory backend to the agent.
-
-        Args:
-            memory: Memory provider or configuration instance.
-
-        Returns:
-            AgentBuilder: Self instance for method chaining.
-        """
+    def add_memory(self, memory: MemoryTypes) -> AgentBuilder:
+        """Add a memory backend to the agent."""
         self._memory = memory
         return self
 
     def add_skill(self, skill: Any) -> AgentBuilder:
-        """Add a custom skill or tool to the agent.
-
-        Args:
-            skill: Skill definition or executable tool.
-
-        Returns:
-            AgentBuilder: Self instance for method chaining.
-        """
+        """Add a custom skill or tool to the agent."""
         self._skills.append(skill)
         return self
 
-    def add_mcp(self, mcp: Connection) -> AgentBuilder:
-        """Add a Model Context Protocol (MCP) server or client.
-
-        Args:
-            mcp: MCP connection configuration.
-
-        Returns:
-            AgentBuilder: Self instance for method chaining.
-        """
-        self._mcps.append(mcp)
+    def add_mcp(self, name: str, mcp: MCPConnection) -> AgentBuilder:
+        """Add a Model Context Protocol (MCP) server or client."""
+        self._mcps[name] = mcp
         return self
 
-    def set_reasoning_flow(
-            self, flow_fn: Callable[[AgentState, Dict[str, Any]], dict[str, Any]]
-    ) -> AgentBuilder:
-        """Define a custom reasoning flow for the agent.
-
-        Args:
-            flow_fn: A callable defining custom state transitions or logic.
-
-        Returns:
-            AgentBuilder: Self instance for method chaining.
-        """
-        self._custom_reasoning_flow = flow_fn
-        return self
-
-    def build(self) -> Any:
+    def build(self) -> CompiledStateGraph:
         """Build and compile the LangGraph workflow representing the agent.
 
         Returns:
             Compiled LangGraph workflow ready for execution.
-
-        Raises:
-            ValueError: If mandatory configurations (such as primary LLM) are missing.
         """
-        # if not self._llm_config:
-        #     raise ValueError("Primary LLM configuration is required to build the agent.")
+        workflow = StateGraph(self._state_schema)
 
-        # Initialize the LangGraph StateGraph
-        workflow = StateGraph(AgentState)
+        # Add specialized nodes to the StateGraph
+        workflow.add_node("prepare_rag_query", self.prepare_rag_query_node)
+        workflow.add_node("prepare_tools", self.prepare_tools_node)
+        workflow.add_node("memory_node", self.memory_node) # Memoria largo plazo
+        workflow.add_node("reasoning", self.reasoning_node)
+        workflow.add_node("save_memory", self.save_memory_node) # Memoria corto plazo
 
-        # Bundle available resources to be accessible during execution
-        agent_resources = {
-            "llm": self._llm,
-            "rag_sources": self._rag_sources,
-            "memory": self._memory,
-            "skills": self._skills,
-            "mcps": self._mcps,
-        }
-
-        # Determine which reasoning logic to use (Custom vs Default)
-        if self._custom_reasoning_flow:
-            def custom_node_wrapper(state: AgentState) -> dict[str, Any]:
-                return self._custom_reasoning_flow(state, agent_resources)
-
-            workflow.add_node("reasoning", custom_node_wrapper)
-        else:
-            workflow.add_node("reasoning", self.default_reasoning_node)
-
-        # Add nodes and edges to the graph structure
-        workflow.set_entry_point("reasoning")
-        workflow.add_edge("reasoning", END)
+        # Wire the sequential execution flow
+        workflow.set_entry_point("prepare_rag_query")
+        workflow.add_edge("prepare_rag_query", "prepare_tools")
+        workflow.add_edge("prepare_tools", "memory_node")
+        workflow.add_edge("memory_node", "reasoning")
+        workflow.add_edge("reasoning", "save_memory")
+        workflow.add_edge("save_memory", END)
 
         return workflow.compile()
 
