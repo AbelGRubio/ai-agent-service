@@ -98,7 +98,7 @@ Raw documents are often too large for embedding models. A 100-page PDF or a larg
 **Example**:
 ```python
 from pygenai.rag.chunking import SemanticChunker
-from pygenai.rag.data import Document
+from pygenai.core.data import Document
 
 chunker = SemanticChunker(chunk_size=500, overlap=50)
 documents = [Document(content="Very long text...")]

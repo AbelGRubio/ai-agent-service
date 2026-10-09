@@ -2,7 +2,7 @@
 
 import asyncio
 
-from pygenai import (
+from pygenai.memory import (
     ConversationState,
     InMemoryAdapter,
     Message,

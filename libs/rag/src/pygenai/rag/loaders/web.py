@@ -17,7 +17,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib import request
 
-from pygenai.rag.data import Document
+from pygenai.core.data import Document
 from pygenai.rag.loaders.base import DocumentLoader
 
 

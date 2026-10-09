@@ -8,11 +8,11 @@ shared across vector stores and retrievers.
 from __future__ import annotations
 
 from .base import BaseEmbeddings
-from .openai import OpenAIEmbeddingsAdapter
 from .simple import SimpleEmbeddings
+from .litellm import LiteLLMEmbeddings
 
 __all__ = [
     "BaseEmbeddings",
-    "OpenAIEmbeddingsAdapter",
+    "LiteLLMEmbeddings",
     "SimpleEmbeddings",
 ]

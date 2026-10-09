@@ -16,7 +16,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from pygenai.rag.data import Document
+from pygenai.core.data import Document
 from pygenai.rag.loaders.base import FileDocumentLoader
 
 

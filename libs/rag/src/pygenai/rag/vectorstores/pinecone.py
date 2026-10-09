@@ -16,7 +16,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from pygenai.rag.data import Chunk, Document, SearchHit
+from pygenai.core.data import Chunk, Document, SearchHit
 from pygenai.rag.vectorstores.base import VectorStore
 
 try:

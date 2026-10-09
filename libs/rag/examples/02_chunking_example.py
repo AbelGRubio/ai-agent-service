@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pygenai.rag.chunking import FixedSizeChunker, TokenChunker
-from pygenai.rag.data import Document
+from pygenai.core.data import Document
 
 
 def main() -> None:

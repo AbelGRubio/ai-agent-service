@@ -1,7 +1,7 @@
 """BufferMemory: stores complete conversation history sequentially."""
 
-from .base import MemoryStore
-from .models import ConversationState, Message
+from pygenai.core.base_memory import MemoryStore
+from pygenai.core.models import ConversationState, Message
 
 
 class BufferMemory(MemoryStore):
@@ -29,7 +29,21 @@ class BufferMemory(MemoryStore):
 
         state = self._sessions[session_id]
         state.messages.append(message)
-        state.total_tokens += message.tokens
+        # state.total_tokens += message.tokens
+
+    async def update_messages(self, session_id: str, messages: list[Message]) -> None:
+        """
+        Update a message in the session.
+
+        Args:
+            session_id: The session identifier.
+            messages: The list of messages to update.
+        """
+        if session_id not in self._sessions:
+            self._sessions[session_id] = ConversationState(session_id=session_id)
+
+        state = self._sessions[session_id]
+        state.messages = messages
 
     async def get_messages(self, session_id: str) -> list[Message]:
         """
@@ -71,6 +85,18 @@ class BufferMemory(MemoryStore):
             self._sessions[session_id] = ConversationState(session_id=session_id)
         self._sessions[session_id].summaries.append(summary)
 
+    async def get_summary(self, session_id) -> str:
+        """
+        Add a summary record (not typically used in BufferMemory).
+
+        Args:
+            session_id: The session identifier.
+        """
+        if session_id not in self._sessions:
+            return ""
+        summaries_ = [s.summary for s in  self._sessions[session_id].summaries]
+        return "\n".join(summaries_)
+
     async def clear_messages(self, session_id: str) -> None:
         """
         Clear all messages from the session.
@@ -80,7 +106,7 @@ class BufferMemory(MemoryStore):
         """
         if session_id in self._sessions:
             self._sessions[session_id].messages.clear()
-            self._sessions[session_id].total_tokens = 0
+            # self._sessions[session_id].total_tokens = 0
 
     async def delete_session(self, session_id: str) -> None:
         """

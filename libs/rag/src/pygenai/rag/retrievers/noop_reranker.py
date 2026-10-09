@@ -13,7 +13,7 @@ Copyright ©2026 All rights reserved.
 
 from __future__ import annotations
 
-from pygenai.rag.retrievers.base import RetrievedDocument
+from pygenai.core.base_retriever import RetrievedDocument
 from pygenai.rag.retrievers.rerank import Reranker
 
 

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from pygenai.rag.retrievers.base import RetrievedDocument
+from pygenai.core.base_retriever import RetrievedDocument
 
 
 class Reranker(ABC):

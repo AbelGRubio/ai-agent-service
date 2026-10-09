@@ -21,8 +21,7 @@ class AgentSettings(BaseSettings):
 
     mcp_url: str = Field(default="http://localhost:8000/mcp", alias="MCP_LOCAL_URL")
 
-    model_name: str = Field(default="gpt-4o", alias="MODEL_NAME")
-    openai_api_key: SecretStr = Field(default=SecretStr(""), alias="OPENAI_API_KEY")
+    model_name: str = Field(default="gemini/gemini-3.6-flash", alias="MODEL_NAME")
     llm_api_key: SecretStr = Field(default=SecretStr(""), alias="LITELLM_MASTER_KEY")
     model_base_url: str = Field(default="http://localhost:5000", alias="MODEL_BASE_URL")
 
@@ -31,18 +30,6 @@ class AgentSettings(BaseSettings):
         populate_by_name=True,
         extra="ignore",
     )
-
-
-def default__mcp_config(settings: AgentSettings) -> dict:
-    """Build default MCP configuration using parsed settings values."""
-    return {
-        "observe-mcp": {
-            "url": settings.mcp_url,
-            "headers": {},
-            "transport": "http",
-        }
-    }
-
 
 @lru_cache(maxsize=1)
 def get_settings() -> AgentSettings:

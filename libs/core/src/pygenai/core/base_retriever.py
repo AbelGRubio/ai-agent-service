@@ -16,7 +16,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-from pygenai.rag.data import Chunk, Document
+from pygenai.core.data import Chunk, Document
 
 
 @dataclass(slots=True)
@@ -36,5 +36,8 @@ class BaseRetriever(ABC):
     def retrieve(self, query: str, top_k: int = 5) -> list[RetrievedDocument]:
         """Retrieve the top-k results for a query."""
 
+    def retrieve_and_format(self, query: str, top_k: int = 5) -> str:
+        """Retrieve documents and format them for downstream consumption."""
+        raise NotImplementedError
 
 __all__ = ["BaseRetriever", "RetrievedDocument"]
