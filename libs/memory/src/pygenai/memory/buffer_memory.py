@@ -1,6 +1,6 @@
 """BufferMemory: stores complete conversation history sequentially."""
 
-from pygenai.core.base import MemoryStore
+from pygenai.core.base_memory import MemoryStore
 from pygenai.core.models import ConversationState, Message
 
 
@@ -29,7 +29,7 @@ class BufferMemory(MemoryStore):
 
         state = self._sessions[session_id]
         state.messages.append(message)
-        state.total_tokens += message.tokens
+        # state.total_tokens += message.tokens
 
     async def get_messages(self, session_id: str) -> list[Message]:
         """
@@ -80,7 +80,7 @@ class BufferMemory(MemoryStore):
         """
         if session_id in self._sessions:
             self._sessions[session_id].messages.clear()
-            self._sessions[session_id].total_tokens = 0
+            # self._sessions[session_id].total_tokens = 0
 
     async def delete_session(self, session_id: str) -> None:
         """

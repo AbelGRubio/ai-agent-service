@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Union
+import uuid
 
 from langchain.agents import create_agent
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.runnables import RunnableConfig
 from langchain_litellm import ChatLiteLLM
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.sessions import StreamableHttpConnection, StdioConnection, SSEConnection, \
@@ -45,7 +47,7 @@ class AgentState(TypedDict):
     rag_texts: list[str]
     tools: list[Any]
     memory_data: dict[str, Any]
-
+    session_id: Optional[str]
 
 class AgentBuilder:
     """Builder class for constructing LangGraph agents following SOLID principles.
@@ -84,14 +86,18 @@ class AgentBuilder:
         await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
 
     # --- Node 1: Prepara pregunta para RAG ---
-    async def prepare_rag_query_node(self, state: AgentState) -> dict[str, Any]:
+    async def prepare_rag_query_node(self, state: AgentState, config: RunnableConfig) -> dict[str, Any]:
         """Extract the user's latest query and retrieve relevant context from RAG sources."""
+        configurable = config.get("configurable", {})
+        session_id = configurable.get("thread_id")
+        if not session_id:
+            session_id = str(uuid.uuid1())
         if not self._rag_sources:
-            return {}
+            return {'session_id': session_id}
 
-        messages = state.get("messages", [])
+        messages: list[BaseMessage] = state.get("messages", [])
         if not messages:
-            return {}
+            return {'session_id': session_id}
 
         last_msg = messages[-1]
         if isinstance(last_msg, HumanMessage):
@@ -105,11 +111,15 @@ class AgentBuilder:
 
         decision_prompt = (
             "Analyze if the following user query requires external knowledge retrieval "
-            "from a document database to provide an accurate answer. "
-            f"Query: '{rag_query}'\n"
-            "Answer strictly with 'YES' and the reformulated query if it needs external documents, "
-            "or 'NO' if it can be answered "
-            "with general knowledge, casual conversation, or tool/code execution without documents."
+            "from a document database to provide an accurate answer.\n"
+            f"Original query: '{rag_query}'\n\n"
+            "Formatting instructions:\n"
+            "- If it requires external documents, respond strictly with 'YES: ' "
+            "         followed by the reformulated query optimized for search.\n"
+            "- If it does NOT require external documents, respond solely with the word 'NO'.\n"
+            "- Do not include explanations, greetings, or any additional text.\n\n"
+            "Example of expected format (if it requires documents):\n"
+            "YES: What are the refund policies for company XYZ?"
         )
 
         try:
@@ -117,20 +127,23 @@ class AgentBuilder:
             decision_text = decision_response.content.strip().upper()
 
             if "YES" not in decision_text:
-                return {}
+                return {'session_id': session_id}
         except Exception:
             pass
 
+        _, question_ = decision_text.split("YES: ", 1)
+
         for rag_name, rag_retriever in self._rag_sources.items():
             try:
-                retrieved_content = rag_retriever.retrieve_and_format(decision_text)
+                retrieved_content = rag_retriever.retrieve_and_format(question_)
                 rag_texts.append(f"--- Content from RAG {rag_name} [{retrieved_content}]")
             except Exception as e:
                 rag_texts.append(f"--- RAG [{rag_name}] error loading information: {e} ---")
 
         return {
-            "rag_query": rag_query,
-            "rag_texts": rag_texts
+            "rag_query": question_,
+            "rag_texts": rag_texts,
+            "session_id": session_id
         }
 
     # --- Node 2: Prepara las tools de los MCPs y skills ---
@@ -157,19 +170,20 @@ class AgentBuilder:
     async def memory_node(self, state: AgentState) -> dict[str, Any]:
         """Load history or session variables from the configured memory system."""
         current_context = dict(state.get("context", {}))
-        memory_data = {}
 
-        if self._memory and hasattr(self._memory, "load_memory_variables"):
+        if self._memory:
             try:
-                memory_data = self._memory.load_memory_variables({})
-                if memory_data:
-                    current_context.update(memory_data)
+                messages: list[BaseMessage] = state.get("messages", [])
+                last_msg = messages[-1]
+                session_id = state.get("session_id", "")
+                await self._memory.add_message(session_id, last_msg)
+                current_context = await self._memory.get_messages(session_id)
             except Exception as e:
                 current_context["memory_error"] = str(e)
 
         return {
             "context": current_context,
-            "memory_data": memory_data
+            "memory_data": current_context
         }
 
     # --- Node 4: Llama al nodo de razonar ---
@@ -179,6 +193,7 @@ class AgentBuilder:
         rag_texts = state.get("rag_texts", [])
         tools = state.get("tools", [])
         current_context = state.get("context", {})
+        memory_data = state.get("memory_data", None)
 
         # Construct system prompt with retrieved RAG knowledge
         system_prompt = "You are an autonomous AI assistant."
@@ -187,6 +202,9 @@ class AgentBuilder:
 
         if "mcp_warning" in current_context:
             system_prompt += f"\n\n{current_context['mcp_warning']}"
+
+        if memory_data:
+            system_prompt += f"\n\nMemory Data:\n{memory_data}"
 
         # Instantiate the agent using create_agent
         react_agent = create_agent(
@@ -207,13 +225,12 @@ class AgentBuilder:
             "context": current_context
         }
 
-    # --- Node 5: Guarda la interacción en la memoria ---
+    # --- Node 5: Guarda la interacción en la memoria a largo plazo---
     async def save_memory_node(self, state: Any) -> dict[str, Any]:
         """Save the latest interaction (user input and assistant response) into memory."""
         if self._memory and hasattr(self._memory, "save_context"):
             messages = state.get("messages", [])
             if len(messages) >= 2:
-                # Intenta extraer el último mensaje del usuario y la última respuesta del asistente
                 last_user_msg = ""
                 last_ai_msg = ""
 
@@ -274,9 +291,9 @@ class AgentBuilder:
         # Add specialized nodes to the StateGraph
         workflow.add_node("prepare_rag_query", self.prepare_rag_query_node)
         workflow.add_node("prepare_tools", self.prepare_tools_node)
-        workflow.add_node("memory_node", self.memory_node)
+        workflow.add_node("memory_node", self.memory_node) # Memoria largo plazo
         workflow.add_node("reasoning", self.reasoning_node)
-        workflow.add_node("save_memory", self.save_memory_node)
+        workflow.add_node("save_memory", self.save_memory_node) # Memoria corto plazo
 
         # Wire the sequential execution flow
         workflow.set_entry_point("prepare_rag_query")

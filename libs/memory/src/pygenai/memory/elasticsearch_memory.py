@@ -2,7 +2,7 @@
 
 from elasticsearch import Elasticsearch
 
-from pygenai.core.base import SemanticSearchAdapter
+from pygenai.core.base_memory import SemanticSearchAdapter
 from pygenai.core.models import Message
 
 
