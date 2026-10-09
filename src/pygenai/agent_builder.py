@@ -26,6 +26,27 @@ MCPConnection: TypeAlias = Union[
     StreamableHttpConnection,
     WebsocketConnection
 ]
+from langchain_core.messages.tool import ToolMessage
+
+
+def clean_messages_history(messages: list) -> list:
+    cleaned = []
+    for msg in messages:
+        # 1. Omitir ToolMessages por completo
+        if isinstance(msg, ToolMessage):
+            continue
+
+        # 2. Omitir AIMessages que sean exclusivamente de llamadas a herramientas (content vacío o sin texto útil)
+        if isinstance(msg, AIMessage):
+            is_tool_call_only = (
+                                        not msg.content or (isinstance(msg.content, str) and not msg.content.strip())
+                                ) and getattr(msg, "tool_calls", None)
+
+            if is_tool_call_only:
+                continue
+
+        cleaned.append(msg)
+    return cleaned
 
 
 @dataclass
@@ -62,7 +83,7 @@ class AgentBuilder:
         self._rag_sources: Dict[str, BaseRetriever] = {}
         self._memory: Optional[MemoryTypes] = None
         self._skills: list[Any] = []
-        self._mcps: list[MCPConnection] = []
+        self._mcps: dict[str, MCPConnection] = {}
         self._mcp_client: Optional[MultiServerMCPClient] = None
         self._mcp_manager = get_mcp_manager()
         self._define_default_llm()
@@ -82,8 +103,9 @@ class AgentBuilder:
         """Initialize the MultiServerMCPClient if MCP configurations are provided."""
         if self._mcps and not self._mcp_client:
             self._mcp_client = MultiServerMCPClient(self._mcps)  # type: ignore[arg-type]
+            self._mcp_manager.current_config_hash = self._mcp_manager._get_hash(self._mcps)
 
-        await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
+        # await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
 
     # --- Node 1: Prepara pregunta para RAG ---
     async def prepare_rag_query_node(self, state: AgentState, config: RunnableConfig) -> dict[str, Any]:
@@ -155,15 +177,18 @@ class AgentBuilder:
         if self._mcps:
             try:
                 await self._start_mcp_client()
-                mcp_tools = await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
+
+                mcp_tools = await self._mcp_manager.get_active_tools(
+                    self._mcps, self._mcp_client
+                )
                 available_tools.extend(mcp_tools)
+
             except Exception as e:
                 mcp_error_warning = f"[Warning: Failed to load tools from MCP servers: {e}]"
-                current_context = state.get("context", {})
-                current_context["mcp_warning"] = mcp_error_warning
+                # current_context["mcp_warning"] = mcp_error_warning
 
         return {
-            "tools": available_tools
+            "tools": [t.name for t in available_tools],
         }
 
     # --- Node 3: Consulta/actualiza Memory ---
@@ -173,10 +198,8 @@ class AgentBuilder:
 
         if self._memory:
             try:
-                # messages: list[BaseMessage] = state.get("messages", [])
-                # last_msg = messages[-1]
                 session_id = state.get("session_id", "")
-                # await self._memory.add_message(session_id, last_msg)
+
                 current_context = await self._memory.get_messages(session_id)
             except Exception as e:
                 current_context["memory_error"] = str(e)
@@ -191,7 +214,7 @@ class AgentBuilder:
         """Execute the core reasoning agent using the prepared RAG texts, tools, and memory."""
         messages = list(state.get("messages", []))
         rag_texts = state.get("rag_texts", [])
-        tools = state.get("tools", [])
+        tools = await self._mcp_manager.get_active_tools(self._mcps, self._mcp_client)
         current_context = state.get("context", {})
         memory_data = state.get("memory_data", None)
 
@@ -219,7 +242,7 @@ class AgentBuilder:
 
         # Merge new responses with existing conversation messages
         updated_messages = current_context + [msg for msg in agent_messages if msg not in messages]
-
+        # clean_messages = clean_messages_history(updated_messages)
         return {
             "messages": updated_messages,
             "context": current_context
@@ -231,6 +254,7 @@ class AgentBuilder:
         if self._memory:
             session_id = state.get("session_id", "")
             user_messages = state.get("messages", [])
+
             await self._memory.update_messages(session_id, user_messages)
 
             if len(user_messages) > 6:
@@ -240,7 +264,6 @@ class AgentBuilder:
                 except Exception:
                     pass
 
-                # Construimos el historial de conversación legible para el LLM
                 conversation_history = "\n".join(
                     [
                         f"{m.type}:{m.content}"
@@ -248,7 +271,6 @@ class AgentBuilder:
                     ]
                 )
 
-                # 3. Nuevo prompt diseñado para generar y actualizar el resumen de memoria a largo plazo
                 summary_prompt = (
                     "Act as a long-term memory system for an AI assistant.\n"
                     "Your task is to update the existing summary by incorporating the new "
@@ -309,9 +331,9 @@ class AgentBuilder:
         self._skills.append(skill)
         return self
 
-    def add_mcp(self, mcp: MCPConnection) -> AgentBuilder:
+    def add_mcp(self, name: str, mcp: MCPConnection) -> AgentBuilder:
         """Add a Model Context Protocol (MCP) server or client."""
-        self._mcps.append(mcp)
+        self._mcps[name] = mcp
         return self
 
     def build(self) -> CompiledStateGraph:

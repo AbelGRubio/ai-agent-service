@@ -1,5 +1,4 @@
 """Main entry point for the CopilotKit agent graph."""
-from rfc3986.abnf_regexp import PATH_NOSCHEME
 
 from pygenai.agent_builder import AgentBuilder
 from pygenai.core.logger import get_logger
@@ -11,7 +10,7 @@ from pygenai.rag.chunking import FixedSizeChunker
 from pygenai.rag.loaders import TextLoader
 from pygenai.rag.retrievers import HybridRetriever
 from pygenai.rag.vectorstores import InMemoryVectorStore
-
+from langchain_mcp_adapters.sessions import StreamableHttpConnection
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -34,6 +33,15 @@ retriever = HybridRetriever(store)
 
 agent_builder.add_rag_source("demo_source", retriever=retriever)
 agent_builder.add_memory(memory)
+
+agent_builder.add_mcp(
+    name="demo_mcp",
+    mcp=StreamableHttpConnection(
+        url="http://localhost:8000/mcp",
+    transport="streamable_http"
+    )
+)
+
 
 # Compile the workflow graph
 graph = agent_builder.build()
