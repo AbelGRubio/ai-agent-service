@@ -24,6 +24,16 @@ class MemoryStore(ABC):
             message: The message to add.
         """
 
+    async def update_messages(self, session_id: str, messages: list[Message]) -> None:
+        """
+        Update a message in the session.
+
+        Args:
+            session_id: The session identifier.
+            messages: The list of messages to update.
+        """
+        return NotImplemented
+
     @abstractmethod
     async def get_messages(self, session_id: str) -> list[Message]:
         """
@@ -57,6 +67,16 @@ class MemoryStore(ABC):
             session_id: The session identifier.
             summary: The summary record to add.
         """
+
+    async def get_summary(self, session_id: str) -> None:
+        """
+        Retrieve the summary for the session.
+
+        Args:
+            session_id: The session identifier.
+            summary: The summary record to add.
+        """
+        return NotImplemented
 
     @abstractmethod
     async def clear_messages(self, session_id: str) -> None:

@@ -31,6 +31,20 @@ class BufferMemory(MemoryStore):
         state.messages.append(message)
         # state.total_tokens += message.tokens
 
+    async def update_messages(self, session_id: str, messages: list[Message]) -> None:
+        """
+        Update a message in the session.
+
+        Args:
+            session_id: The session identifier.
+            messages: The list of messages to update.
+        """
+        if session_id not in self._sessions:
+            self._sessions[session_id] = ConversationState(session_id=session_id)
+
+        state = self._sessions[session_id]
+        state.messages = messages
+
     async def get_messages(self, session_id: str) -> list[Message]:
         """
         Retrieve all messages in the session.
@@ -70,6 +84,18 @@ class BufferMemory(MemoryStore):
         if session_id not in self._sessions:
             self._sessions[session_id] = ConversationState(session_id=session_id)
         self._sessions[session_id].summaries.append(summary)
+
+    async def get_summary(self, session_id) -> str:
+        """
+        Add a summary record (not typically used in BufferMemory).
+
+        Args:
+            session_id: The session identifier.
+        """
+        if session_id not in self._sessions:
+            return ""
+        summaries_ = [s.summary for s in  self._sessions[session_id].summaries]
+        return "\n".join(summaries_)
 
     async def clear_messages(self, session_id: str) -> None:
         """

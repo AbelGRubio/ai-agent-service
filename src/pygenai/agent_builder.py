@@ -169,14 +169,14 @@ class AgentBuilder:
     # --- Node 3: Consulta/actualiza Memory ---
     async def memory_node(self, state: AgentState) -> dict[str, Any]:
         """Load history or session variables from the configured memory system."""
-        current_context = dict(state.get("context", {}))
+        current_context = state.get("context", {})
 
         if self._memory:
             try:
-                messages: list[BaseMessage] = state.get("messages", [])
-                last_msg = messages[-1]
+                # messages: list[BaseMessage] = state.get("messages", [])
+                # last_msg = messages[-1]
                 session_id = state.get("session_id", "")
-                await self._memory.add_message(session_id, last_msg)
+                # await self._memory.add_message(session_id, last_msg)
                 current_context = await self._memory.get_messages(session_id)
             except Exception as e:
                 current_context["memory_error"] = str(e)
@@ -218,7 +218,7 @@ class AgentBuilder:
         agent_messages = agent_response.get("messages", [])
 
         # Merge new responses with existing conversation messages
-        updated_messages = messages + [msg for msg in agent_messages if msg not in messages]
+        updated_messages = current_context + [msg for msg in agent_messages if msg not in messages]
 
         return {
             "messages": updated_messages,
@@ -228,25 +228,59 @@ class AgentBuilder:
     # --- Node 5: Guarda la interacción en la memoria a largo plazo---
     async def save_memory_node(self, state: Any) -> dict[str, Any]:
         """Save the latest interaction (user input and assistant response) into memory."""
-        if self._memory and hasattr(self._memory, "save_context"):
-            messages = state.get("messages", [])
-            if len(messages) >= 2:
-                last_user_msg = ""
-                last_ai_msg = ""
+        if self._memory:
+            session_id = state.get("session_id", "")
+            user_messages = state.get("messages", [])
+            await self._memory.update_messages(session_id, user_messages)
 
-                for msg in reversed(messages):
-                    if isinstance(msg, AIMessage) and not last_ai_msg:
-                        last_ai_msg = msg.content
-                    elif isinstance(msg, HumanMessage) and not last_user_msg:
-                        last_user_msg = msg.content
-                    if last_user_msg and last_ai_msg:
-                        break
+            if len(user_messages) > 6:
+                existing_summary = ""
+                try:
+                    existing_summary = await self._memory.get_summary(session_id)
+                except Exception:
+                    pass
 
-                if last_user_msg or last_ai_msg:
-                    try:
-                        self._memory.save_context({"input": last_user_msg}, {"output": last_ai_msg})
-                    except Exception:
-                        pass
+                # Construimos el historial de conversación legible para el LLM
+                conversation_history = "\n".join(
+                    [
+                        f"{m.type}:{m.content}"
+                        for m in user_messages
+                    ]
+                )
+
+                # 3. Nuevo prompt diseñado para generar y actualizar el resumen de memoria a largo plazo
+                summary_prompt = (
+                    "Act as a long-term memory system for an AI assistant.\n"
+                    "Your task is to update the existing summary by incorporating the new "
+                    "conversation history.\n\n"
+                )
+
+                if existing_summary:
+                    summary_prompt += f"Existing Summary:\n{existing_summary}\n\n"
+                else:
+                    summary_prompt += "Existing Summary: None (this is the first summary).\n\n"
+
+                summary_prompt += (
+                    f"New Conversation History:\n{conversation_history}\n\n"
+                    "Instructions:\n"
+                    "- Integrate the new information from the conversation into the "
+                    "existing summary.\n"
+                    "- Keep the updated summary concise, preserving key points, user"
+                    " preferences, and important details.\n"
+                    "- Return strictly the text of the updated summary, with no greetings or"
+                    " additional explanations."
+                )
+
+                try:
+                    summary_response = await self._llm.ainvoke(
+                        [HumanMessage(content=summary_prompt)]
+                    )
+                    updated_summary = summary_response.content.strip()
+
+                    if updated_summary:
+                        await self._memory.add_summary(session_id, updated_summary)
+                except Exception:
+                    pass
 
         return {}
 
